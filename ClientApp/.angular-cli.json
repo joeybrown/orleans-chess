@@ -8,7 +8,8 @@
       "root": "src",
       "outDir": "dist",
       "assets": [
-        "assets"
+        "assets",
+        "chessboardjs-0.3.0/img"
       ],
       "index": "index.html",
       "main": "main.ts",
@@ -19,9 +20,13 @@
       "prefix": "app",
       "styles": [
         "styles.css",
-        "../node_modules/bootstrap/dist/css/bootstrap.min.css"
+        "../node_modules/bootstrap/dist/css/bootstrap.min.css",
+        "chessboardjs-0.3.0/css/chessboard-0.3.0.css"
       ],
-      "scripts": [],
+      "scripts": [
+        "../node_modules/jquery/dist/jquery.js",
+        "chessboardjs-0.3.0/js/chessboard-0.3.0.js"
+      ],
       "environmentSource": "environments/environment.ts",
       "environments": {
         "dev": "environments/environment.ts",

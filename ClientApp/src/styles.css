@@ -1,1 +1,50 @@
 /* You can add global styles to this file, and also import other style files */
+
+.isValidating {
+    animation: purpleBoxToggle 1s linear infinite;
+  }
+    
+  @keyframes purpleBoxToggle {
+    0% {
+        box-shadow: inset 0 0 3px 3px purple;        
+      }
+      50% {
+        box-shadow: none;
+      }
+      100% {
+        box-shadow: inset 0 0 3px 3px purple;
+      }
+  }
+
+  .mostRecentValidMove {
+    animation: greenBoxToggle 5s linear infinite;
+
+  }
+
+  @keyframes greenBoxToggle {
+      0% {
+        box-shadow: inset 0 0 3px 3px green;        
+      }
+      50% {
+        box-shadow: inset 0 0 1px 1px green;
+      }
+      100% {
+        box-shadow: inset 0 0 3px 3px green;
+      }
+  }
+
+  .invalidMove {
+    animation: redBoxToggle .25s linear infinite;
+  }
+
+  @keyframes redBoxToggle {
+      0% {
+        box-shadow: inset 0 0 3px 3px red;        
+      }
+      50% {
+        box-shadow: none;
+      }
+      100% {
+        box-shadow: inset 0 0 3px 3px red;
+      }
+  }
