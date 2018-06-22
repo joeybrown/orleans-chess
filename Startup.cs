@@ -48,6 +48,11 @@ namespace OrleansChess
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
+            app.UseSignalR(routes => 
+            {
+                routes.MapHub<ChessHub>("/chesshub");
+            });
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -68,10 +73,6 @@ namespace OrleansChess
                 }
             });
 
-            app.UseSignalR(routes => 
-            {
-                routes.MapHub<ChessHub>("/chesshub");
-            });
         }
     }
 }

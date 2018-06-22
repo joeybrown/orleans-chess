@@ -119,6 +119,10 @@ export class BoardComponent implements OnInit {
             this.board.start();
         });
 
+        this.boardService.fenStream.subscribe(fen => {
+            this.board.position(fen);
+        });
+
         this.mostRecentValidMove
             .pairwise()
             .map(x => { return { current: x[1], previous: x[0] }; })
