@@ -25,7 +25,8 @@
       ],
       "scripts": [
         "../node_modules/jquery/dist/jquery.js",
-        "chessboardjs-0.3.0/js/chessboard-0.3.0.js"
+        "chessboardjs-0.3.0/js/chessboard-0.3.0.js",
+        "../node_modules/@aspnet/signalr/dist/browser/signalr.js"
       ],
       "environmentSource": "environments/environment.ts",
       "environments": {
