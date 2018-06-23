@@ -10,43 +10,6 @@ import { IMove } from './utilities/IMove';
 
 declare var ChessBoard;
 
-const movedPiece = (source: string, target: string) => {
-    if (source === target)
-        return false;
-
-    if (target === 'offboard')
-        return false;
-
-    return true;
-}
-
-const applyFuncToMove = (move: IMove, applyFunc: (squareEl) => void) => {
-    const squares = [move.source, move.target];
-    squares.forEach(x => {
-        const squareEl = $('#board').find(`.square-${x}`);
-        applyFunc(squareEl);
-    });
-}
-
-const removeSquareClass =
-    (move: IMove, cssClass: string) =>
-        applyFuncToMove(move, (squareEl) =>
-            squareEl.removeClass(cssClass));
-
-const addSquareClass =
-    (move: IMove, cssClass: string) =>
-        applyFuncToMove(move, (squareEl) =>
-            squareEl.addClass(cssClass));
-
-const setNewActiveCssClass = ((x: { current: IMove, previous: IMove }, cssClass: string) => {
-    if (x.previous) {
-        removeSquareClass(x.previous, cssClass);
-    }
-    if (x.current) {
-        addSquareClass(x.current, cssClass);
-    }
-});
-
 @Component({
     selector: 'app-board',
     templateUrl: './board.component.html',
@@ -55,7 +18,48 @@ const setNewActiveCssClass = ((x: { current: IMove, previous: IMove }, cssClass:
 })
 export class BoardComponent implements OnInit {
 
+    movedPiece = (source: string, target: string) => {
+        if (source === target)
+            return false;
+    
+        if (target === 'offboard')
+            return false;
+    
+        return true;
+    }
+    
+    applyFuncToMove = (move: IMove, applyFunc: (squareEl) => void) => {
+        const squares = [move.source, move.target];
+        squares.forEach(x => {
+            const squareEl = $(`#board-${this.boardId}`).find(`.square-${x}`);
+            applyFunc(squareEl);
+        });
+    }
+    
+    removeSquareClass =
+        (move: IMove, cssClass: string) =>
+            this.applyFuncToMove(move, (squareEl) =>
+                squareEl.removeClass(cssClass));
+    
+    addSquareClass =
+        (move: IMove, cssClass: string) =>
+            this.applyFuncToMove(move, (squareEl) => {
+                squareEl.addClass(cssClass);
+            });
+    
+    setNewActiveCssClass = ((x: { current: IMove, previous: IMove }, cssClass: string) => {
+        if (x.previous) {
+            this.removeSquareClass(x.previous, cssClass);
+        }
+        if (x.current) {
+            this.addSquareClass(x.current, cssClass);
+        }
+    });
+
     @Input() orientation: 'black' | 'white';
+    @Input() size: number;
+    @Input() boardId: string;
+
 
     private board: any;
 
@@ -68,11 +72,11 @@ export class BoardComponent implements OnInit {
     private onDrop = (source, target, piece, newPos, oldPos, orientation) => {
         const moveBack = (moveToUndo: IMove, fen: string) => {
             this.board.position(fen);
-            addSquareClass(moveToUndo, 'invalidMove');
-            setTimeout(()=>removeSquareClass(moveToUndo, 'invalidMove'), 500);
+            this.addSquareClass(moveToUndo, 'invalidMove');
+            setTimeout(()=>this.removeSquareClass(moveToUndo, 'invalidMove'), 500);
         }
 
-        if (!movedPiece(source, target))
+        if (!this.movedPiece(source, target))
             return;
 
         const oldFen = ChessBoard.objToFen(oldPos);
@@ -115,7 +119,7 @@ export class BoardComponent implements OnInit {
         this.boardService.initialize().subscribe(fen => {
             const boardConfig = this.boardConfig;
             boardConfig.start = fen;
-            this.board = ChessBoard('board', boardConfig);
+            this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
             this.board.start();
         });
 
@@ -126,11 +130,11 @@ export class BoardComponent implements OnInit {
         this.mostRecentValidMove
             .pairwise()
             .map(x => { return { current: x[1], previous: x[0] }; })
-            .subscribe(x => setNewActiveCssClass(x, 'mostRecentValidMove'));
+            .subscribe(x => this.setNewActiveCssClass(x, 'mostRecentValidMove'));
 
         this.isValidating
             .pairwise()
             .map(x => { return { current: x[1], previous: x[0] }; })
-            .subscribe(x => setNewActiveCssClass(x, 'isValidating'));
+            .subscribe(x => this.setNewActiveCssClass(x, 'isValidating'));
     }
 }

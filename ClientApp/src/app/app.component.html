@@ -1,4 +1,11 @@
 <h1>Orleans Chess Demo</h1>
-
-<app-board [orientation]="boardOrientation"></app-board>
+<div class="row">
+<div class="col col-xs-6">
+    <app-board [orientation]="boardOrientation" [size]="400" [boardId]="1"></app-board>
+</div>
+<div class="clearfix">
+<div class="col col-xs-6">
+    <app-board [orientation]="boardOrientation" [size]="400" [boardId]="2"></app-board>
+</div>
+</div>
 <app-sources></app-sources>
