@@ -7,7 +7,7 @@
         {
             "taskName": "build",
             "args": [
-                "${workspaceRoot}/OrleansChess.csproj"
+                "${workspaceRoot}/OrleansChess.Web/OrleansChess.Web.csproj"
             ],
             "isBuildCommand": true,
             "problemMatcher": "$msCompile"
