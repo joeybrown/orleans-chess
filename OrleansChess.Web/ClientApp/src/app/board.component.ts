@@ -107,7 +107,6 @@ export class BoardComponent implements OnInit {
 
     private boardConfig = {
         draggable: true,
-        orientation: this.orientation,
         onDrop: this.onDrop,
         onDragStart: this.onDragStart,
         start: null,
@@ -121,6 +120,9 @@ export class BoardComponent implements OnInit {
             boardConfig.start = fen;
             this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
             this.board.start();
+            if (this.orientation === 'white') {
+                this.board.flip();
+            }
         });
 
         this.boardService.fenStream.subscribe(fen => {
