@@ -8,4 +8,9 @@
     <ProjectReference Include="..\OrleansChess.GrainInterfaces\OrleansChess.GrainInterfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.3" />
+  </ItemGroup>
+
 </Project>
