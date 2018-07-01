@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-class HelloGrain : Orleans.Grain, IHello
+public class HelloGrain : Orleans.Grain, IHello
 {
     public Task<string> SayHello(string msg)
     {
