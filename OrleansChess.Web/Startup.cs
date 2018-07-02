@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using OrleansChess.Web.Orleans;
 
 namespace OrleansChess.Web
 {
@@ -29,6 +30,8 @@ namespace OrleansChess.Web
             });
 
             services.AddSignalR();
+
+            services.AddOrleansClient();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
