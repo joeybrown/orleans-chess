@@ -1,64 +1,60 @@
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Orleans;
-using Orleans.Configuration;
-using Orleans.Runtime;
 using System;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Orleans;
+using Orleans.Configuration;
+using Orleans.Runtime;
 
 namespace OrleansChess.Web.Orleans {
-    public static class OrleansServiceCollectionExtensions
-    {
-        public static IServiceCollection AddOrleansClient(this IServiceCollection services)
-        {
-            AddOrleansClientAsync().Wait();
+    public static class OrleansServiceCollectionExtensions {
+        public static IServiceCollection AddOrleansClient (this IServiceCollection services) {
+            AddOrleansClientAsync ().Wait ();
             return services;
         }
 
-        private static async Task AddOrleansClientAsync()
-        {
-            var client = await StartClientWithRetries();
-            // GrainClient.Initialize(config);
+        public delegate void OnFailure (int attempt, int attemptsBeforeFailing);
+
+        private static async Task AddOrleansClientAsync () {
+            var client = await StartClientWithRetries ();
         }
 
-        private static async Task<IClusterClient> StartClientWithRetries(int initializeAttemptsBeforeFailing = 5)
-        {
+        private static async Task<T> ExecuteFuncWithRetries<T> (int attemptsBeforeFailing, Func<T> func, OnFailure onFailure) {
             int attempt = 0;
-            IClusterClient client;
-            while (true)
-            {
-                try
-                {
-                    client = new ClientBuilder()
-                        .UseLocalhostClustering()
-                        .Configure<ClusterOptions>(options =>
-                        {
-                            options.ClusterId = "dev";
-                            options.ServiceId = "OrleansChess";
-                        })
-                        .ConfigureLogging(logging => logging.AddConsole())
-                        .Build();
-
-                    await client.Connect();
-                    Console.WriteLine("Client successfully connect to silo host");
+            T result;
+            while (true) {
+                try {
+                    result = func ();
                     break;
-                }
-                catch (SiloUnavailableException)
-                {
+                } catch (SiloUnavailableException) {
                     attempt++;
-                    Console.WriteLine($"Attempt {attempt} of {initializeAttemptsBeforeFailing} failed to initialize the Orleans client.");
-                    if (attempt > initializeAttemptsBeforeFailing)
-                    {
+                    onFailure (attempt, attemptsBeforeFailing);
+                    if (attempt > attemptsBeforeFailing) {
                         throw;
                     }
-                    await Task.Delay(TimeSpan.FromSeconds(4));
+                    await Task.Delay (TimeSpan.FromSeconds (4));
                 }
             }
+            return result;
+        }
 
+        private static async Task<IClusterClient> StartClientWithRetries (int attemptsBeforeFailing = 5) {
+            Func<IClusterClient> buildClient = () => new ClientBuilder ()
+                .UseLocalhostClustering ()
+                .Configure<ClusterOptions> (options => {
+                    options.ClusterId = "dev";
+                    options.ServiceId = "HelloWorldApp";
+                })
+                .ConfigureLogging (logging => logging.AddConsole ())
+                .Build ();
+            OnFailure onFailure = (attempt, totalAttempts) => Console.WriteLine ($"Attempt {attempt} of {attemptsBeforeFailing} failed to initialize the Orleans client.");
+            var client = await ExecuteFuncWithRetries (attemptsBeforeFailing, buildClient, onFailure);
+            await client.Connect ();
+            Console.WriteLine ("Client successfully connect to silo host");
             return client;
         }
     }
