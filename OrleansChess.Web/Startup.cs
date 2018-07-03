@@ -30,7 +30,6 @@ namespace OrleansChess.Web
             });
 
             services.AddSignalR();
-
             services.AddOrleansClient();
         }
 
