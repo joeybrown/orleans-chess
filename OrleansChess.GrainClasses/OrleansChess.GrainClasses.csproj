@@ -6,9 +6,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OrleansChess.GrainInterfaces\OrleansChess.GrainInterfaces.csproj" />
+    <ProjectReference Include="..\OrleansChess.Common\OrleansChess.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="ChessDotNet" Version="0.9.6" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.3" />
     <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.3" />
   </ItemGroup>

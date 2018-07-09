@@ -39,6 +39,7 @@ namespace OrleansSiloHost
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
+                .AddMemoryGrainStorage("GameStateStore")
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
