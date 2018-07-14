@@ -5,51 +5,60 @@ using ChessDotNet;
 using Orleans;
 using Orleans.Providers;
 using OrleansChess.GrainInterfaces.Chess;
+using OrleansChess.GrainClasses;
+using OrleansChess.Common;
 
 namespace OrleansChess.GrainClasses.Chess
 {
-    public enum GameBehaviorStateOption
-    {
-        NoPlayersActive,
-        WaitingForWhite,
-        WaitingForBlack,
-        GameIsActive
-    }
-
     public enum GamePlayerTrun
     {
         Black,
         White
     }
 
+    public enum GameBehaviorStateOption {
+        NoPlayersActive,
+        WaitingForWhite,
+        WaitingForBlack,
+        GameIsActive
+    }
+
     public class GameState
     {
-        public Guid BlackSeatId { get; set; }
-        public Guid WhiteSeatId { get; set; }
+        public Guid? BlackSeatId { get; set; }
+        public Guid? WhiteSeatId { get; set; }
 
         public GamePlayerTrun Turn { get; set; } = GamePlayerTrun.White;
         public GameBehaviorStateOption BehaviorState { get; set; } = GameBehaviorStateOption.NoPlayersActive;
-
         public IList<Move> Moves { get; set; } = new List<Move>();
-
         public MoveType LastMoveType { get; set; }
     }
 
     [StorageProvider(ProviderName = "GameStateStore")]
     public class Game : Grain<GameState>, IGame
     {
-        public Task<string> BlackJoinGame(Guid blackId)
+        public Task<ISuccessOrErrors<string>> BlackJoinGame(Guid blackId)
         {
-            return Behavior.BlackJoinGame(this, blackId);
+            return Behavior.BlackJoinGameAsync(this, blackId);
         }
 
-        public Task<string> WhiteJoinGame(Guid whiteId)
+        public Task<ISuccessOrErrors<string>> WhiteJoinGame(Guid whiteId)
         {
-            return Behavior.WhiteJoinGame(this, whiteId);
+            return Behavior.WhiteJoinGameAsync(this, whiteId);
         }
 
-        private GameBehavior Behavior { get; set; }
-        public ChessGame GameState { get; private set; }
+        private GameBehavior _behavior {get;set;}
+
+        private GameBehavior Behavior { 
+            get {
+                return _behavior;
+                } 
+            set {
+                State.BehaviorState = value.GetBehavior();
+                _behavior = value;
+            } 
+        }
+        public ChessGame GameState { get; set; }
 
         public override Task OnActivateAsync()
         {
@@ -67,8 +76,9 @@ namespace OrleansChess.GrainClasses.Chess
 
         private abstract class GameBehavior
         {
-            public abstract Task<string> BlackJoinGame(Game game, Guid blackId);
-            public abstract Task<string> WhiteJoinGame(Game game, Guid whiteId);
+            public abstract GameBehaviorStateOption GetBehavior();
+            public abstract Task<ISuccessOrErrors<string>> BlackJoinGameAsync(Game game, Guid blackId);
+            public abstract Task<ISuccessOrErrors<string>> WhiteJoinGameAsync(Game game, Guid whiteId);
 
             public static GameBehavior Build(Game game, GameBehaviorStateOption behaviorState)
             {
@@ -94,22 +104,26 @@ namespace OrleansChess.GrainClasses.Chess
                     game.State.BehaviorState = GameBehaviorStateOption.NoPlayersActive;
                 }
 
-                public override Task<string> BlackJoinGame(Game game, Guid blackId)
+                public override async Task<ISuccessOrErrors<string>> BlackJoinGameAsync(Game game, Guid blackId)
                 {
                     var fen = "new fen";
-                    game.Behavior = new WaitingForWhite(game);
-                    game.State.BehaviorState = GameBehaviorStateOption.WaitingForWhite;
+                    game.Behavior = game.WhiteIsActive ? (GameBehavior) new GameIsActive(game) : (GameBehavior) new WaitingForWhite(game);
                     game.State.BlackSeatId = blackId;
-                    return Task.FromResult(fen);
+                    await game.WriteStateAsync();
+                    ISuccessOrErrors<string> result = new Success<string>(fen);
+                    return result;
                 }
 
-                public override Task<string> WhiteJoinGame(Game game, Guid whiteId)
+                public override GameBehaviorStateOption GetBehavior() => GameBehaviorStateOption.NoPlayersActive;
+
+                public override async Task<ISuccessOrErrors<string>> WhiteJoinGameAsync(Game game, Guid whiteId)
                 {
                     var fen = "new fen";
-                    game.Behavior = new WaitingForBlack(game);
-                    game.State.BehaviorState = GameBehaviorStateOption.WaitingForBlack;
+                    game.Behavior = game.BlackIsActive ? (GameBehavior) new GameIsActive(game) : (GameBehavior) new WaitingForBlack(game);
                     game.State.WhiteSeatId = whiteId;
-                    return Task.FromResult(fen);
+                    await game.WriteStateAsync();
+                    ISuccessOrErrors<string> result = new Success<string>(fen);
+                    return result;
                 }
             }
 
@@ -120,18 +134,24 @@ namespace OrleansChess.GrainClasses.Chess
                     game.State.BehaviorState = GameBehaviorStateOption.WaitingForBlack;
                 }
 
-                public override Task<string> BlackJoinGame(Game game, Guid blackId)
+                public override async Task<ISuccessOrErrors<string>> BlackJoinGameAsync(Game game, Guid blackId)
                 {
                     var fen = "new fen";
-                    game.Behavior = game.WhiteIsActive ? (GameBehavior)new GameIsActive(game) : (GameBehavior)new WaitingForWhite(game);
+                    game.Behavior = game.WhiteIsActive ? (GameBehavior) new GameIsActive(game) : (GameBehavior) new WaitingForWhite(game);
                     game.State.BlackSeatId = blackId;
-                    return Task.FromResult(fen);
+                    await game.WriteStateAsync();
+                    ISuccessOrErrors<string> result = new Success<string>(fen);
+                    return result;
                 }
 
-                public override Task<string> WhiteJoinGame(Game game, Guid whiteId)
+                public override GameBehaviorStateOption GetBehavior() => GameBehaviorStateOption.WaitingForBlack;
+
+                public override Task<ISuccessOrErrors<string>> WhiteJoinGameAsync(Game game, Guid whiteId)
                 {
-                    // todo
-                    throw new InvalidOperationException();
+                    ISuccessOrErrors<string> error = new Error<string>(new []{
+                        "White has already joined."
+                    });
+                    return Task.FromResult(error);
                 }
             }
 
@@ -143,18 +163,23 @@ namespace OrleansChess.GrainClasses.Chess
                     game.State.BehaviorState = GameBehaviorStateOption.WaitingForWhite;
                 }
 
-                public override Task<string> BlackJoinGame(Game game, Guid blackId)
+                public override Task<ISuccessOrErrors<string>> BlackJoinGameAsync(Game game, Guid blackId)
                 {
-                    // todo
-                    throw new InvalidOperationException();
+                    ISuccessOrErrors<string> error = new Error<string>(new []{
+                        "Black has already joined."
+                    });
+                    return Task.FromResult(error);
                 }
 
-                public override Task<string> WhiteJoinGame(Game game, Guid whiteId)
+                public override GameBehaviorStateOption GetBehavior() => GameBehaviorStateOption.WaitingForWhite;
+
+                public override Task<ISuccessOrErrors<string>> WhiteJoinGameAsync(Game game, Guid whiteId)
                 {
                     var fen = "new fen";
-                    game.Behavior = game.WhiteIsActive ? (GameBehavior)new GameIsActive(game) : (GameBehavior)new WaitingForBlack(game);
+                    game.Behavior = game.BlackIsActive ? (GameBehavior) new GameIsActive(game) : (GameBehavior) new WaitingForBlack(game);
                     game.State.WhiteSeatId = whiteId;
-                    return Task.FromResult(fen);
+                    ISuccessOrErrors<string> result = new Success<string>(fen);
+                    return Task.FromResult(result);
                 }
             }
 
@@ -165,13 +190,15 @@ namespace OrleansChess.GrainClasses.Chess
                     game.State.BehaviorState = GameBehaviorStateOption.GameIsActive;
                 }
 
-                public override Task<string> BlackJoinGame(Game game, Guid blackId)
+                public override Task<ISuccessOrErrors<string>> BlackJoinGameAsync(Game game, Guid blackId)
                 {
                     // todo
                     throw new InvalidOperationException();
                 }
+                
+                public override GameBehaviorStateOption GetBehavior() => GameBehaviorStateOption.GameIsActive;
 
-                public override Task<string> WhiteJoinGame(Game game, Guid whiteId)
+                public override Task<ISuccessOrErrors<string>> WhiteJoinGameAsync(Game game, Guid whiteId)
                 {
                     // todo
                     throw new InvalidOperationException();

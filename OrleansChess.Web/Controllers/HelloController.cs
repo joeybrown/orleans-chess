@@ -20,10 +20,7 @@ namespace OrleansChess.Web.Controllers
         [HttpGet("[action]/{message}")]
         public async Task<string> SayHello(string message)
         {
-            var guid = Guid.NewGuid();
-            var helloGrain = _client.GetGrain<IHello>(guid);
-            var hello = await helloGrain.SayHello(message);
-            return hello;
+            return message;
         }
     }
 }

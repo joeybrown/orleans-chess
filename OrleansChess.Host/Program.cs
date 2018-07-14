@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using OrleansChess.GrainClasses.Chess;
 
 namespace OrleansSiloHost
 {
@@ -46,7 +47,7 @@ namespace OrleansSiloHost
                     options.ServiceId = "OrleansChess";
                 })
                 .Configure<EndpointOptions>(options => options.AdvertisedIPAddress = IPAddress.Loopback)
-                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(HelloGrain).Assembly).WithReferences())
+                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(Game).Assembly).WithReferences())
                 .ConfigureLogging(logging => logging.AddConsole());
 
             var host = builder.Build();
