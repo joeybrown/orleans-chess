@@ -8,6 +8,8 @@ namespace OrleansChess.GrainInterfaces.Chess
     {
         Task<ISuccessOrErrors<string>> BlackJoinGame(Guid blackId);
         Task<ISuccessOrErrors<string>> WhiteJoinGame(Guid whiteId);
+        Task<ISuccessOrErrors<string>> WhiteMove();
+        Task<ISuccessOrErrors<string>> BlackMove();
         Task<string> GetShortFen();
     }
 }

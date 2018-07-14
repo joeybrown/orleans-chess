@@ -9,7 +9,7 @@ using Xunit;
 
 namespace OrleansChess.Grains.Tests.GameTests
 {
-    public class MovesTests : TestKitBase
+    public class FenTests : TestKitBase
     {
         [Fact]
         public async Task OnGameCreation_Fen_Should_BeInit()
