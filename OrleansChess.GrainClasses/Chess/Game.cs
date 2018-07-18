@@ -100,7 +100,7 @@ namespace OrleansChess.GrainClasses.Chess {
 
         private class WhiteTurn : ITurnBehavior {
             public TurnBehaviorStateOption GetBehavior () => TurnBehaviorStateOption.White;
-            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not black's turn.").ToTask();
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not black's turn.").ToTask ();
 
             public async Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) {
                 var move = new Move (originalPosition, newPosition, Player.White);
@@ -130,7 +130,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 return new Success<string> (fen);
             }
 
-            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not white's turn.").ToTask();
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not white's turn.").ToTask ();
         }
 
         private interface IGameBehavior {
