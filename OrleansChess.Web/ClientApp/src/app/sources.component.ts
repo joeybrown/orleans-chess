@@ -8,6 +8,7 @@ import { Component } from '@angular/core';
 export class SourcesComponent {
     private sources = [
         {text: 'Orleans', href: 'https://dotnet.github.io/orleans/'},
-        {text: 'chessboard.js', href: 'http://chessboardjs.com'}
+        {text: 'chessboard.js', href: 'http://chessboardjs.com'},
+        {text: 'Chess.NET', href: 'https://github.com/ProgramFOX/Chess.NET'}
     ]
 }

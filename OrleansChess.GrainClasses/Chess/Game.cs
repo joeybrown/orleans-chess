@@ -32,24 +32,15 @@ namespace OrleansChess.GrainClasses.Chess {
 
     [StorageProvider (ProviderName = "GameStateStore")]
     public partial class Game : Grain<GameState>, IGame {
-        public Task<ISuccessOrErrors<string>> BlackJoinGame (Guid blackId) {
-            return Behavior.BlackJoinGameAsync (this, blackId);
-        }
+        public Task<ISuccessOrErrors<string>> BlackJoinGame (Guid blackId) => Behavior.BlackJoinGameAsync (this, blackId);
 
-        public Task<ISuccessOrErrors<string>> WhiteJoinGame (Guid whiteId) {
-            return Behavior.WhiteJoinGameAsync (this, whiteId);
-        }
+        public Task<ISuccessOrErrors<string>> WhiteJoinGame (Guid whiteId) => Behavior.WhiteJoinGameAsync (this, whiteId);
 
-        public Task<ISuccessOrErrors<string>> WhiteMove() {
-            return TurnBehavior.WhiteMove(this);
-        }
+        public Task<ISuccessOrErrors<string>> WhiteMove (string originalPosition, string newPosition) => Behavior.WhiteMove (this, originalPosition, newPosition);
 
-        public Task<ISuccessOrErrors<string>> BlackMove() {
-            return TurnBehavior.WhiteMove(this);
-        }
+        public Task<ISuccessOrErrors<string>> BlackMove (string originalPosition, string newPosition) => Behavior.BlackMove (this, originalPosition, newPosition);
 
-        public Task<string> GetShortFen () =>
-            Task.FromResult (this.ChessGame.GetFen ().Split ().First ());
+        public Task<string> GetShortFen () => Task.FromResult (this.ChessGame.GetFen ().Split ().First ());
 
         private IGameBehavior _behavior { get; set; }
         private IGameBehavior Behavior {
@@ -68,7 +59,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 return _turnBehavior;
             }
             set {
-                State.TurnBehaviorState = value.GetBehavior();
+                State.TurnBehaviorState = value.GetBehavior ();
                 _turnBehavior = value;
             }
         }
@@ -90,8 +81,8 @@ namespace OrleansChess.GrainClasses.Chess {
 
         private interface ITurnBehavior {
             TurnBehaviorStateOption GetBehavior ();
-            Task<ISuccessOrErrors<string>> BlackMove (Game game);
-            Task<ISuccessOrErrors<string>> WhiteMove (Game game);
+            Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition);
+            Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition);
         }
 
         private static class TurnBehaviorFactory {
@@ -109,18 +100,16 @@ namespace OrleansChess.GrainClasses.Chess {
 
         private class WhiteTurn : ITurnBehavior {
             public TurnBehaviorStateOption GetBehavior () => TurnBehaviorStateOption.White;
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not black's turn.").ToTask();
 
-            public Task<ISuccessOrErrors<string>> BlackMove (Game game) {
-                ISuccessOrErrors<string> error = new Error<string> (new [] {
-                    "It is not black's turn."
-                });
-                return Task.FromResult (error);
-            }
-
-            public async Task<ISuccessOrErrors<string>> WhiteMove (Game game) {
-                // move
-                game.TurnBehavior = new WhiteTurn();
-                await game.WriteStateAsync();
+            public async Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) {
+                var move = new Move (originalPosition, newPosition, Player.White);
+                var isValid = game.ChessGame.IsValidMove (move);
+                if (!isValid)
+                    return new Error<string> ("Not a valid move");
+                game.ChessGame.ApplyMove (move, true);
+                game.TurnBehavior = new BlackTurn ();
+                await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
                 return new Success<string> (fen);
             }
@@ -129,26 +118,27 @@ namespace OrleansChess.GrainClasses.Chess {
         private class BlackTurn : ITurnBehavior {
             public TurnBehaviorStateOption GetBehavior () => TurnBehaviorStateOption.Black;
 
-            public async Task<ISuccessOrErrors<string>> BlackMove (Game game) {
-                // move
-                game.TurnBehavior = new WhiteTurn();
-                await game.WriteStateAsync();
+            public async Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) {
+                var move = new Move (originalPosition, newPosition, Player.Black);
+                var isValid = game.ChessGame.IsValidMove (move);
+                if (!isValid)
+                    return new Error<string> ("Not a valid move");
+                game.ChessGame.ApplyMove (move, true);
+                game.TurnBehavior = new WhiteTurn ();
+                await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
                 return new Success<string> (fen);
             }
 
-            public Task<ISuccessOrErrors<string>> WhiteMove (Game game) {
-                ISuccessOrErrors<string> error = new Error<string> (new [] {
-                    "It is not white's turn."
-                });
-                return Task.FromResult (error);
-            }
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("It is not white's turn.").ToTask();
         }
 
         private interface IGameBehavior {
             GameBehaviorStateOption GetBehavior ();
             Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId);
             Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId);
+            Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition);
+            Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition);
         }
 
         private static class GameBehaviorFactory {
@@ -169,26 +159,16 @@ namespace OrleansChess.GrainClasses.Chess {
         }
 
         private static class CommonBehavior {
-            public static Task<ISuccessOrErrors<string>> WhiteAlreadyJoined () {
-                ISuccessOrErrors<string> error = new Error<string> (new [] {
-                    "White has already joined."
-                });
-                return Task.FromResult (error);
-            }
+            public static Task<ISuccessOrErrors<string>> WhiteAlreadyJoined () => new Error<string> ("White has already joined.").ToTask ();
 
-            public static Task<ISuccessOrErrors<string>> BlackAlreadyJoined () {
-                ISuccessOrErrors<string> error = new Error<string> (new [] {
-                    "Black has already joined."
-                });
-                return Task.FromResult (error);
-            }
+            public static Task<ISuccessOrErrors<string>> BlackAlreadyJoined () => new Error<string> ("Black has already joined.").ToTask ();
         }
 
         private class NoPlayersActive : IGameBehavior {
             public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.NoPlayersActive;
 
             public async Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId) {
-                game.Behavior = game.WhiteIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForWhite();
+                game.Behavior = game.WhiteIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForWhite ();
                 game.State.BlackSeatId = blackId;
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
@@ -197,13 +177,17 @@ namespace OrleansChess.GrainClasses.Chess {
             }
 
             public async Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) {
-                game.Behavior = game.BlackIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForBlack();
+                game.Behavior = game.BlackIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForBlack ();
                 game.State.WhiteSeatId = whiteId;
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
                 ISuccessOrErrors<string> result = new Success<string> (fen);
                 return result;
             }
+
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("No players active.").ToTask ();
+
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("No players active.").ToTask ();
         }
 
         private class WaitingForBlack : IGameBehavior {
@@ -218,16 +202,17 @@ namespace OrleansChess.GrainClasses.Chess {
                 return result;
             }
 
-            public Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) =>
-                CommonBehavior.WhiteAlreadyJoined ();
+            public Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteAlreadyJoined ();
+
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("Waiting for black to join.").ToTask ();
+
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("Waiting for black to join.").ToTask ();
         }
 
         private class WaitingForWhite : IGameBehavior {
-            public GameBehaviorStateOption GetBehavior () =>
-                GameBehaviorStateOption.WaitingForWhite;
+            public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.WaitingForWhite;
 
-            public Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId) =>
-                CommonBehavior.BlackAlreadyJoined ();
+            public Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId) => CommonBehavior.BlackAlreadyJoined ();
 
             public async Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) {
                 game.Behavior = game.BlackIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForBlack ();
@@ -237,16 +222,21 @@ namespace OrleansChess.GrainClasses.Chess {
                 ISuccessOrErrors<string> result = new Success<string> (fen);
                 return result;
             }
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => new Error<string> ("Waiting for white to join.").ToTask ();
+
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => new Error<string> ("Waiting for white to join.").ToTask ();
         }
 
         private class GameIsActive : IGameBehavior {
             public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.GameIsActive;
 
-            public Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId) =>
-                CommonBehavior.BlackAlreadyJoined ();
+            public Task<ISuccessOrErrors<string>> BlackJoinGameAsync (Game game, Guid blackId) => CommonBehavior.BlackAlreadyJoined ();
 
-            public Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) =>
-                CommonBehavior.WhiteAlreadyJoined ();
+            public Task<ISuccessOrErrors<string>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteAlreadyJoined ();
+
+            public Task<ISuccessOrErrors<string>> WhiteMove (Game game, string originalPosition, string newPosition) => game.TurnBehavior.WhiteMove (game, originalPosition, newPosition);
+
+            public Task<ISuccessOrErrors<string>> BlackMove (Game game, string originalPosition, string newPosition) => game.TurnBehavior.BlackMove (game, originalPosition, newPosition);
         }
     }
 }

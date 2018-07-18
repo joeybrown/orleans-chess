@@ -1,33 +1,48 @@
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace OrleansChess.Common {
     public interface ISuccessOrErrors<T> {
         T Data { get; }
         bool WasSuccessful { get; }
         IEnumerable<string> Errors { get; }
+        Task<ISuccessOrErrors<T>> ToTask ();
     }
 
-    public class Success<T> : ISuccessOrErrors<T> {
+    public abstract class SuccessOrErrorsAbstract<T> : ISuccessOrErrors<T> {
+        public abstract T Data { get; }
+
+        public abstract bool WasSuccessful { get; }
+
+        public abstract IEnumerable<string> Errors { get; }
+
+        public Task<ISuccessOrErrors<T>> ToTask () => Task.FromResult ((ISuccessOrErrors<T>) this);
+    }
+
+    public class Success<T> : SuccessOrErrorsAbstract<T> {
         public Success (T data) {
             Data = data;
         }
-        public T Data { get; }
+        public override T Data { get; }
 
-        public bool WasSuccessful => true;
+        public override bool WasSuccessful => true;
 
-        public IEnumerable<string> Errors =>
-        throw new System.NotImplementedException ();
+        public override IEnumerable<string> Errors => null;
     }
 
-    public class Error<T> : ISuccessOrErrors<T> {
+    public class Error<T> : SuccessOrErrorsAbstract<T> {
         public Error (IEnumerable<string> errors) {
             Errors = errors;
         }
-        public T Data =>
-        throw new System.NotImplementedException ();
 
-        public bool WasSuccessful => false;
+        public Error (string error) {
+            Errors = new [] { error };
+        }
 
-        public IEnumerable<string> Errors { get; }
+        public override T Data => default(T);
+
+        public override bool WasSuccessful => false;
+
+        public override IEnumerable<string> Errors { get; }
     }
 }
