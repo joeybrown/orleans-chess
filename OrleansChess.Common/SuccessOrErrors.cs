@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -11,7 +12,6 @@ namespace OrleansChess.Common {
 
     public abstract class SuccessOrErrorsAbstract<T> : ISuccessOrErrors<T> {
         public abstract T Data { get; }
-
         public abstract bool WasSuccessful { get; }
 
         public abstract IEnumerable<string> Errors { get; }
@@ -39,7 +39,7 @@ namespace OrleansChess.Common {
             Errors = new [] { error };
         }
 
-        public override T Data => default(T);
+        public override T Data => default (T);
 
         public override bool WasSuccessful => false;
 
