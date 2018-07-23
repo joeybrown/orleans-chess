@@ -4,7 +4,7 @@ using Orleans.TestKit;
 using OrleansChess.Common;
 using OrleansChess.GrainClasses.Chess;
 
-namespace OrleansChess.Grains.Tests {
+namespace OrleansChess.Grains.Tests.Extensions {
         public static class GameExtensions {
         public static Task<ISuccessOrErrors<IFenWithETag>> BothPlayersJoinGame (this Game game) => game.WhiteJoinGame (Guid.NewGuid ()).Then (eTag => game.BlackJoinGame (Guid.NewGuid ()));
         public static Task<ISuccessOrErrors<IFenWithETag>> BothPlayersJoinGame (this Game inputGame, out Game game) {

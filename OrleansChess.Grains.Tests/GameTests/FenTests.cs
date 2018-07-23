@@ -5,6 +5,7 @@ using Orleans.TestKit;
 using OrleansChess.Common;
 using OrleansChess.GrainClasses.Chess;
 using OrleansChess.GrainInterfaces.Chess;
+using OrleansChess.Grains.Tests.Extensions;
 using Xunit;
 
 namespace OrleansChess.Grains.Tests.GameTests {
