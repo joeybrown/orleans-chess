@@ -51,10 +51,10 @@ namespace OrleansChess.Grains.Tests.GameTests {
 
         [Fact]
         public async Task AfterBlackAndWhiteJoin_ShouldNot_AllowWhiteOrBlack () {
-            var grain = Silo.CreateGrain<Game> (Guid.NewGuid ()); 
-            await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ()); 
-            await grain.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ()); 
-            await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ()); 
+            var grain = Silo.CreateGrain<Game> (Guid.NewGuid ());
+            await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
+            await grain.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
+            await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
             await grain.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
         }
     }
