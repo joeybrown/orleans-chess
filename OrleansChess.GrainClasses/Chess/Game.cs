@@ -6,6 +6,7 @@ using ChessDotNet;
 using Orleans;
 using Orleans.Providers;
 using OrleansChess.Common;
+using OrleansChess.Common.Events;
 using OrleansChess.GrainClasses;
 using OrleansChess.GrainInterfaces.Chess;
 
@@ -190,6 +191,9 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
+                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), null);
+                await stream.OnNextAsync(new BlackJoinedGame(blackId));
                 return new Success<IFenWithETag> (fen);
             }
 
@@ -199,6 +203,9 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
+                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), null);
+                await stream.OnNextAsync(new WhiteJoinedGame(whiteId));
                 return new Success<IFenWithETag> (fen);
             }
 
@@ -216,6 +223,9 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
+                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), nameof(BlackJoinedGame));
+                await stream.OnNextAsync(new BlackJoinedGame(blackId));
                 return new Success<IFenWithETag> (fen);
             }
 
@@ -237,6 +247,9 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
+                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), nameof(WhiteJoinedGame));
+                await stream.OnNextAsync(new WhiteJoinedGame(whiteId));
                 return new Success<IFenWithETag> (fen);
             }
             public Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("Waiting for white to join.").ToTask ();
