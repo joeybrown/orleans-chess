@@ -191,8 +191,8 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
-                var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), null);
+                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
+                var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), nameof(BlackJoinedGame));
                 await stream.OnNextAsync(new BlackJoinedGame(blackId));
                 return new Success<IFenWithETag> (fen);
             }
@@ -203,8 +203,8 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
-                var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), null);
+                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
+                var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), nameof(WhiteJoinedGame));
                 await stream.OnNextAsync(new WhiteJoinedGame(whiteId));
                 return new Success<IFenWithETag> (fen);
             }
@@ -223,7 +223,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
                 var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), nameof(BlackJoinedGame));
                 await stream.OnNextAsync(new BlackJoinedGame(blackId));
                 return new Success<IFenWithETag> (fen);
@@ -247,7 +247,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 game.State.ETag = Guid.NewGuid ().ToString();
                 await game.WriteStateAsync ();
                 var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerActionStream);
+                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
                 var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), nameof(WhiteJoinedGame));
                 await stream.OnNextAsync(new WhiteJoinedGame(whiteId));
                 return new Success<IFenWithETag> (fen);

@@ -2,35 +2,35 @@ using System;
 
 namespace OrleansChess.Common.Events {
     public static class Constants {
-        public const string PlayerActionStream = "Default";
+        public const string PlayerSeatEventStream = "Default";
     }
 
-    public interface IPlayerGameEvent {
+    public interface IPlayerSeatEvent {
         Guid PlayerId { get; }
     }
 
-    public class BlackJoinedGame : IPlayerGameEvent {
+    public class BlackJoinedGame : IPlayerSeatEvent {
         public BlackJoinedGame (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class WhiteJoinedGame: IPlayerGameEvent {
+    public class WhiteJoinedGame: IPlayerSeatEvent {
         public WhiteJoinedGame (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class WhiteLeftGame : IPlayerGameEvent {
+    public class WhiteLeftGame : IPlayerSeatEvent {
         public WhiteLeftGame (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class BlackLeftGame : IPlayerGameEvent {
+    public class BlackLeftGame : IPlayerSeatEvent {
         public BlackLeftGame (Guid playerId) {
             PlayerId = playerId;
         }
