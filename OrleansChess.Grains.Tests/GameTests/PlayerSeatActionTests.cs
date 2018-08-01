@@ -8,7 +8,7 @@ using OrleansChess.GrainInterfaces.Chess;
 using Xunit;
 
 namespace OrleansChess.Grains.Tests.GameTests {
-    public class PlayerJoinTests : TestKitBase {
+    public class PlayerSeatActionTests : TestKitBase {
         [Fact]
         public async Task OnGameCreation_Should_AllowWhite () {
             var game = Silo.CreateGrain<Game> (Guid.NewGuid ());
