@@ -115,7 +115,7 @@ export class BoardComponent implements OnInit {
 
     ngOnInit(): void {
 
-        this.boardService.initialize().subscribe(fen => {
+        var fenStream = this.boardService.initialize().subscribe(fen => {
             const boardConfig = this.boardConfig;
             boardConfig.start = fen;
             this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
@@ -124,6 +124,8 @@ export class BoardComponent implements OnInit {
                 this.board.flip();
             }
         });
+
+        
 
         this.boardService.fenStream.subscribe(fen => {
             this.board.position(fen);

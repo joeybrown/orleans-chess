@@ -5,39 +5,53 @@ import 'rxjs/add/observable/of';
 import { of } from 'rxjs/observable/of';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { catchError, map } from 'rxjs/operators';
-import { BehaviorSubject } from "rxjs/BehaviorSubject";
 import { Subject } from "rxjs/Subject";
 import { HubConnection } from "@aspnet/signalr";
 import * as signalR from "@aspnet/signalr";
 
-export class TryMoveResult {
-    constructor(public successful: boolean, public fen:string){}
+export interface ISuccessOrErrors<T> {
+    readonly data: T;
+    readonly wasSuccessful: boolean;
+    readonly errors: string[];
+}
+
+export interface IValueWithETag<T> {
+    readonly value: T;
+    readonly eTag: string;
+}
+
+export interface IFenWithETag extends IValueWithETag<string> {
+
 }
 
 @Injectable()
-export class BoardService{
+export class BoardService {
     private connection: HubConnection;
 
-    private count: number = 0;
+    private fen = new Subject<IFenWithETag>();
 
-    private fen = new Subject<string>();
-    
     constructor(private appHttpService: AppHttpService) {
     }
 
-    tryMove: (oldFen: string, newFen: string) => Observable<TryMoveResult> = (oldFen, newFen) => {
+    private gameSeatActivity: (method: string, gameId: string) => Observable<ISuccessOrErrors<IFenWithETag>> =
+        (method: string, gameId: string) =>
+            fromPromise(this.connection.invoke(method, gameId))
+                .pipe(catchError(error => of(`Error: ${error}`)));
 
-        this.count += 1;
-        const treatAsSuccess = this.count % 3 !== 0;
+    private playerMove: (method: string, gameId: string, originalPosition: string, newPosition: string, eTag: string) => Observable<ISuccessOrErrors<IFenWithETag>> =
+        (method, gameId, originalPosition, newPosition, eTag) =>
+            fromPromise(this.connection.invoke(method, gameId, originalPosition))
+                .pipe(catchError(error => of(`Error: ${error}`)));
 
-        if (!treatAsSuccess) {
-            return Observable.of(new TryMoveResult(false, oldFen)).delay(500)
-        }
+    whiteJoinGame = gameId => this.gameSeatActivity("WhiteJoinGame", gameId);
 
-        return fromPromise(this.connection.invoke("TryMove", newFen))
-            .pipe(catchError(error => of(`Error: ${error}`)))
-            .pipe(map(x => new TryMoveResult(true, newFen)));
-    }
+    whiteMove = (gameId, originalPosition, newPosition, eTag) =>
+        this.playerMove("WhiteMove", gameId, originalPosition, newPosition, eTag);
+
+    blackMove = (gameId, originalPosition, newPosition, eTag) =>
+        this.playerMove("BlackMove", gameId, originalPosition, newPosition, eTag);
+
+    blackJoinGame = gameId => this.gameSeatActivity("BlackJoinGame", gameId);
 
     fenStream = this.fen.asObservable();
 
@@ -49,17 +63,20 @@ export class BoardService{
             .withUrl("/chesshub")
             .build();
 
-        this.connection.on("UpdateFen", (newFen) => {
+        this.connection.on("PositionUpdated", (newFen: IFenWithETag) => {
             this.fen.next(newFen);
-        })
-
-        this.connection.on("InitializeFen", (initialFen) => {
-            fen.next(initialFen);
-            fen.complete();
         });
 
-        this.connection.start().catch(err => console.error(err.toString()));        
-        
+        this.connection.on("BlackJoined", () => {
+            console.log("Black joined.")
+        });
+
+        this.connection.on("WhiteJoined", () => {
+            console.log("White joined.")
+        });
+
+        this.connection.start().catch(err => console.error(err.toString()));
+
         return fen;
     }
 }
