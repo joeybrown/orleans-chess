@@ -8,7 +8,7 @@ using OrleansChess.Grains.Tests.Extensions;
 using Xunit;
 
 namespace OrleansChess.Grains.Tests.GameTests {
-    public class PlayerActivityStreamingTests : TestKitBase {
+    public class PlayerSeatActionStreamingTests : TestKitBase {
         [Fact]
         public async Task OnGameCreationWhenWhiteJoins_Should_StreamEvent () {
             var gameId = Guid.NewGuid ();

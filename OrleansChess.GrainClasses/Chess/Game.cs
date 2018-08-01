@@ -180,24 +180,8 @@ namespace OrleansChess.GrainClasses.Chess {
             public static Task<ISuccessOrErrors<IFenWithETag>> WhiteAlreadyJoined () => new Error<IFenWithETag> ("White has already joined.").ToTask ();
 
             public static Task<ISuccessOrErrors<IFenWithETag>> BlackAlreadyJoined () => new Error<IFenWithETag> ("Black has already joined.").ToTask ();
-        }
-
-        private class NoPlayersActive : IGameBehavior {
-            public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.NoPlayersActive;
-
-            public async Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) {
-                game.Behavior = game.WhiteIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForWhite ();
-                game.State.BlackSeatId = blackId;
-                game.State.ETag = Guid.NewGuid ().ToString();
-                await game.WriteStateAsync ();
-                var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
-                var stream = provider.GetStream<BlackJoinedGame>(game.GetPrimaryKey(), nameof(BlackJoinedGame));
-                await stream.OnNextAsync(new BlackJoinedGame(blackId));
-                return new Success<IFenWithETag> (fen);
-            }
-
-            public async Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) {
+      
+            public static async Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) {
                 game.Behavior = game.BlackIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForBlack ();
                 game.State.WhiteSeatId = whiteId;
                 game.State.ETag = Guid.NewGuid ().ToString();
@@ -209,15 +193,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 return new Success<IFenWithETag> (fen);
             }
 
-            public Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("No players active.").ToTask ();
-
-            public Task<ISuccessOrErrors<IFenWithETag>> BlackMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("No players active.").ToTask ();
-        }
-
-        private class WaitingForBlack : IGameBehavior {
-            public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.WaitingForBlack;
-
-            public async Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) {
+            public static async Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) {
                 game.Behavior = game.WhiteIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForWhite ();
                 game.State.BlackSeatId = blackId;
                 game.State.ETag = Guid.NewGuid ().ToString();
@@ -228,8 +204,26 @@ namespace OrleansChess.GrainClasses.Chess {
                 await stream.OnNextAsync(new BlackJoinedGame(blackId));
                 return new Success<IFenWithETag> (fen);
             }
+      }
 
-            public Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteAlreadyJoined ();
+        private class NoPlayersActive : IGameBehavior {
+            public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.NoPlayersActive;
+
+            public Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) => CommonBehavior.BlackJoinGameAsync(game, blackId);
+
+            public Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteJoinGameAsync(game, whiteId);
+
+            public Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("No players active.").ToTask ();
+
+            public Task<ISuccessOrErrors<IFenWithETag>> BlackMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("No players active.").ToTask ();
+        }
+
+        private class WaitingForBlack : IGameBehavior {
+            public GameBehaviorStateOption GetBehavior () => GameBehaviorStateOption.WaitingForBlack;
+
+            public Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) => CommonBehavior.BlackJoinGameAsync(game, blackId);
+
+             public Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteAlreadyJoined ();
 
             public Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("Waiting for black to join.").ToTask ();
 
@@ -241,17 +235,8 @@ namespace OrleansChess.GrainClasses.Chess {
 
             public Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGameAsync (Game game, Guid blackId) => CommonBehavior.BlackAlreadyJoined ();
 
-            public async Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) {
-                game.Behavior = game.BlackIsActive ? (IGameBehavior) new GameIsActive () : (IGameBehavior) new WaitingForBlack ();
-                game.State.WhiteSeatId = whiteId;
-                game.State.ETag = Guid.NewGuid ().ToString();
-                await game.WriteStateAsync ();
-                var fen = await game.GetShortFen ();
-                var provider = game.GetStreamProvider(Constants.PlayerSeatEventStream);
-                var stream = provider.GetStream<WhiteJoinedGame>(game.GetPrimaryKey(), nameof(WhiteJoinedGame));
-                await stream.OnNextAsync(new WhiteJoinedGame(whiteId));
-                return new Success<IFenWithETag> (fen);
-            }
+            public Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGameAsync (Game game, Guid whiteId) => CommonBehavior.WhiteJoinGameAsync(game, whiteId);
+
             public Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("Waiting for white to join.").ToTask ();
 
             public Task<ISuccessOrErrors<IFenWithETag>> BlackMove (Game game, string originalPosition, string newPosition, string eTag) => new Error<IFenWithETag> ("Waiting for white to join.").ToTask ();
