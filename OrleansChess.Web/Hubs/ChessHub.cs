@@ -18,7 +18,7 @@ public class ChessHub : Hub
     {
     }
 
-    public async Task<ISuccessOrErrors<IFenWithETag>> WhiteJoinGame(Guid gameId){
+    public async Task<ISuccessOrErrors<WhiteJoined>> WhiteJoinGame(Guid gameId){
         var whiteId = Guid.NewGuid();
         var game = _orleansClient.GetGrain<IGame>(gameId);
         var result = await game.WhiteJoinGame(whiteId);
@@ -29,7 +29,7 @@ public class ChessHub : Hub
         return result;
     }
 
-    public async Task<ISuccessOrErrors<IFenWithETag>> WhiteMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+    public async Task<ISuccessOrErrors<IBoardStateWithETag>> WhiteMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
         var game = _orleansClient.GetGrain<IGame>(gameId);
         var result = await game.WhiteMove(originalPosition, newPosition, eTag);
         if (result.WasSuccessful) {
@@ -38,7 +38,7 @@ public class ChessHub : Hub
         return result;
     }
 
-    public async Task PositionUpdated(string gameId, IFenWithETag fen) {
+    public async Task PositionUpdated(string gameId, IBoardStateWithETag fen) {
         await Clients.Group(gameId).SendAsync(nameof(PositionUpdated), fen);
     }
 
@@ -50,7 +50,7 @@ public class ChessHub : Hub
         await Clients.Group(gameId).SendAsync(nameof(BlackJoined));
     }
 
-    public async Task<ISuccessOrErrors<IFenWithETag>> BlackJoinGame(Guid gameId){
+    public async Task<ISuccessOrErrors<IBoardStateWithETag>> BlackJoinGame(Guid gameId){
         var blackId = Guid.NewGuid();
         var game = _orleansClient.GetGrain<IGame>(gameId);
         var result = await game.BlackJoinGame(blackId);
@@ -61,7 +61,7 @@ public class ChessHub : Hub
         return result;
     }
 
-    public async Task<ISuccessOrErrors<IFenWithETag>> BlackMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+    public async Task<ISuccessOrErrors<IBoardStateWithETag>> BlackMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
         var game = _orleansClient.GetGrain<IGame>(gameId);
         var result = await game.BlackMove(originalPosition, newPosition, eTag);
         if (result.WasSuccessful) {

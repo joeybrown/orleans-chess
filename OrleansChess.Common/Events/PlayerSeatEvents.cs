@@ -1,10 +1,6 @@
 using System;
 
 namespace OrleansChess.Common.Events {
-    public static class Constants {
-        public const string PlayerSeatEventStream = "Default";
-    }
-
     public interface IPlayerSeatEvent {
         Guid PlayerId { get; }
     }
@@ -34,7 +30,6 @@ namespace OrleansChess.Common.Events {
         public BlackLeftGame (Guid playerId) {
             PlayerId = playerId;
         }
-
         public Guid PlayerId { get; }
     }
 }

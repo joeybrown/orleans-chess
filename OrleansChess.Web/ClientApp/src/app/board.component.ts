@@ -7,18 +7,12 @@ import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/skip';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { IMove } from './utilities/IMove';
+import curry from 'lodash/curry';
 
 declare var ChessBoard;
 
-@Component({
-    selector: 'app-board',
-    templateUrl: './board.component.html',
-    styleUrls: ['./board.component.css'],
-    providers: [BoardService]
-})
-export class BoardComponent implements OnInit {
-
-    movedPiece = (source: string, target: string) => {
+export class BoardComponentHelpers {
+    static movedPiece = (source: string, target: string) => {
         if (source === target)
             return false;
     
@@ -27,39 +21,43 @@ export class BoardComponent implements OnInit {
     
         return true;
     }
-    
-    applyFuncToMove = (move: IMove, applyFunc: (squareEl) => void) => {
+
+    static applyFuncToMove = (boardId: string, move: IMove, applyFunc: (squareEl) => void) => {
         const squares = [move.source, move.target];
         squares.forEach(x => {
-            const squareEl = $(`#board-${this.boardId}`).find(`.square-${x}`);
+            const squareEl = $(`#board-${boardId}`).find(`.square-${x}`);
             applyFunc(squareEl);
         });
     }
-    
-    removeSquareClass =
-        (move: IMove, cssClass: string) =>
-            this.applyFuncToMove(move, (squareEl) =>
-                squareEl.removeClass(cssClass));
-    
-    addSquareClass =
-        (move: IMove, cssClass: string) =>
-            this.applyFuncToMove(move, (squareEl) => {
-                squareEl.addClass(cssClass);
-            });
-    
-    setNewActiveCssClass = ((x: { current: IMove, previous: IMove }, cssClass: string) => {
-        if (x.previous) {
-            this.removeSquareClass(x.previous, cssClass);
-        }
-        if (x.current) {
-            this.addSquareClass(x.current, cssClass);
-        }
-    });
 
+    static removeSquareClass = (boardId: string, move: IMove, cssClass: string) =>
+        BoardComponentHelpers.applyFuncToMove(boardId, move, (squareEl) =>
+            squareEl.removeClass(cssClass));
+
+    static addSquareClass = (boardId: string, move: IMove, cssClass: string) =>
+        BoardComponentHelpers.applyFuncToMove(boardId, move, (squareEl) =>
+            squareEl.addClass(cssClass));
+
+    static setNewActiveCssClass = (boardId: string, x: { current: IMove, previous: IMove }, cssClass: string) => {
+        if (x.previous) 
+            BoardComponentHelpers.removeSquareClass(boardId, x.previous, cssClass);
+        if (x.current) 
+            BoardComponentHelpers.addSquareClass(boardId, x.current, cssClass);
+    }
+
+    static onDragStart = (isValidating: IMove, source, piece, position, orientation) => !isValidating;
+}
+
+@Component({
+    selector: 'app-board',
+    templateUrl: './board.component.html',
+    styleUrls: ['./board.component.css'],
+    providers: [BoardService]
+})
+export class BoardComponent implements OnInit {
     @Input() orientation: 'black' | 'white';
     @Input() size: number;
     @Input() boardId: string;
-
 
     private board: any;
 
@@ -68,6 +66,11 @@ export class BoardComponent implements OnInit {
 
     private isValidating = new BehaviorSubject<IMove>(null);
     private mostRecentValidMove = new BehaviorSubject<IMove>(null);
+
+    private movedPiece = BoardComponentHelpers.movedPiece;
+    private removeSquareClass = curry(BoardComponentHelpers.removeSquareClass)(this.boardId);
+    private addSquareClass = curry(BoardComponentHelpers.addSquareClass)(this.boardId);
+    private setNewActiveCssClass = curry(BoardComponentHelpers.setNewActiveCssClass)(this.boardId);
 
     private onDrop = (source, target, piece, newPos, oldPos, orientation) => {
         const moveBack = (moveToUndo: IMove, fen: string) => {
@@ -100,15 +103,10 @@ export class BoardComponent implements OnInit {
             () => this.isValidating.next(null));
     };
 
-    private onDragStart = (source, piece, position, orientation) => {
-        if (this.isValidating.getValue())
-            return false;
-    }
-
     private boardConfig = {
         draggable: true,
         onDrop: this.onDrop,
-        onDragStart: this.onDragStart,
+        onDragStart: curry(BoardComponentHelpers.onDragStart)(this.isValidating.getValue()),
         start: null,
         pieceTheme: 'chessboardjs-0.3.0/img/chesspieces/wikipedia/{piece}.png'
     }
