@@ -10,6 +10,13 @@ namespace OrleansChess.Common {
     }
 
     public class BoardState : IBoardState {
+        public BoardState (IBoardState boardState) {
+            Fen = boardState.Fen;
+            OriginalPosition = boardState.OriginalPosition;
+            NewPosition = boardState.NewPosition;
+            ETag = boardState.ETag;
+        }
+
         public BoardState (string fen, string originalPosition, string newPosition, string eTag) {
             Fen = fen;
             OriginalPosition = originalPosition;

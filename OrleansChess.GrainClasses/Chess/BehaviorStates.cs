@@ -4,13 +4,6 @@ namespace OrleansChess.GrainClasses.Chess {
         White
     }
 
-    public enum GameBehaviorStateOption {
-        NoPlayersActive,
-        WaitingForWhite,
-        WaitingForBlack,
-        GameIsActive
-    }
-
     public enum SeatBehaviorStateOption {
         Occupied,
         Unoccupied

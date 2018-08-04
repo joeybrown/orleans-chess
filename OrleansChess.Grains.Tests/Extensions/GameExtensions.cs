@@ -7,8 +7,8 @@ using OrleansChess.GrainInterfaces.Chess;
 
 namespace OrleansChess.Grains.Tests.Extensions {
     public static class GameExtensions {
-        public static Task<ISuccessOrErrors<IFenWithETag>> BothPlayersJoinGame (this IGame game) => game.WhiteJoinGame (Guid.NewGuid ()).Then (eTag => game.BlackJoinGame (Guid.NewGuid ()));
-        public static Task<ISuccessOrErrors<IFenWithETag>> BothPlayersJoinGame (this IGame inputGame, out IGame game) {
+        public static Task<ISuccessOrErrors<IBoardState>> BothPlayersJoinGame (this IGame game) => game.WhiteJoinGame (Guid.NewGuid ()).Then (eTag => game.BlackJoinGame (Guid.NewGuid ()));
+        public static Task<ISuccessOrErrors<IBoardState>> BothPlayersJoinGame (this IGame inputGame, out IGame game) {
             game = inputGame;
             return game.BothPlayersJoinGame ();
         }
