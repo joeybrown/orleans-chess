@@ -1,9 +1,35 @@
 namespace OrleansChess.Common {
-    public interface IPlayerMoveEventStream {
-        string ProviderName { get; set; }
+    public interface IStreamProvider
+    {
+        string Name {get;}
     }
 
-    public class PlayerMoveEventStream : IPlayerMoveEventStream {
-        public string ProviderName { get; set; } //"Default" for testing
+    public abstract class AbstractStreamProvider: IStreamProvider {
+        public AbstractStreamProvider(string providerName)
+        {
+            Name = providerName;
+        }
+
+        public string Name { get; }
+    }
+
+    public interface IPlayerMoveStreamProvider : IStreamProvider {
+    }
+
+    public class PlayerMoveStreamProvider : AbstractStreamProvider, IPlayerMoveStreamProvider
+    {
+        public PlayerMoveStreamProvider(string providerName) : base(providerName)
+        {
+        }
+    }
+
+    public interface IPlayerSeatStreamProvider: IStreamProvider {
+    }
+
+    public class PlayerSeatStreamProvider : AbstractStreamProvider, IStreamProvider
+    {
+        public PlayerSeatStreamProvider(string providerName) : base(providerName)
+        {
+        }
     }
 }

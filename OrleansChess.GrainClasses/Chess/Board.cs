@@ -21,9 +21,9 @@ namespace OrleansChess.GrainClasses.Chess {
 
     [StorageProvider (ProviderName = GrainPersistence.GameStateStore)]
     public partial class Board : Grain<BoardState>, IBoard {
-        private string PlayerMoveEventStreamProvider { get; }
-        public Board (IPlayerMoveEventStream playerMovedEventStream) {
-            PlayerMoveEventStreamProvider = playerMovedEventStream.ProviderName;
+        private string PlayerMoveStreamProvider { get; }
+        public Board (IPlayerMoveStreamProvider playerMoveStreamProvider) {
+            PlayerMoveStreamProvider = playerMoveStreamProvider.Name;
         }
 
         public Task<ISuccessOrErrors<BlackMoved>> BlackMove (string originalPosition, string newPosition, string eTag) {
@@ -71,7 +71,7 @@ namespace OrleansChess.GrainClasses.Chess {
                     board.State.BehaviorState = TurnBehaviorStateOption.Black;
                     board.State.ETag = Guid.NewGuid ().ToString ();
                     await board.WriteStateAsync ();
-                    var provider = board.GetStreamProvider (board.PlayerMoveEventStreamProvider);
+                    var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
                     var stream = provider.GetStream<WhiteMoved> (game.GetPrimaryKey (), nameof (WhiteMoved));
                     await stream.OnNextAsync (new WhiteMoved (boardState));
                     return new Success<WhiteMoved> (boardState);
@@ -96,7 +96,7 @@ namespace OrleansChess.GrainClasses.Chess {
                     board.State.BehaviorState = TurnBehaviorStateOption.White;
                     board.State.ETag = Guid.NewGuid ().ToString ();
                     await board.WriteStateAsync ();
-                    var provider = board.GetStreamProvider (board.PlayerMoveEventStreamProvider);
+                    var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
                     var stream = provider.GetStream<BlackMoved> (game.GetPrimaryKey (), nameof (BlackMoved));
                     await stream.OnNextAsync (new BlackMoved (boardState));
                     return new Success<BlackMoved> (boardState);

@@ -16,6 +16,13 @@ namespace OrleansChess.GrainClasses.Chess {
 
     [StorageProvider (ProviderName = GrainPersistence.SeatWhiteStateStore)]
     public class SeatWhite : Grain<SeatWhiteState>, ISeatWhite {
+
+        private string PlayerSeatStreamProvider {get;}
+
+        public SeatWhite(IPlayerSeatStreamProvider playerSeatStreamProvider) {
+            PlayerSeatStreamProvider = playerSeatStreamProvider.Name;
+        }
+
         public Task<ISuccessOrErrors<Common.BoardState>> JoinGame (Guid playerId) => Behavior.JoinGame (this, playerId);
 
         public Task<ISuccessOrErrors<Common.BoardState>> LeaveGame () => Behavior.LeaveGame (this);
@@ -50,7 +57,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 await seat.WriteStateAsync ();
                 var game = seat.GrainFactory.GetGrain<IGame> (seat.GetPrimaryKey ());
                 var boardState = await game.GetBoardState ();
-                var provider = seat.GetStreamProvider (Constants.PlayerSeatEventStream);
+                var provider = seat.GetStreamProvider (seat.PlayerSeatStreamProvider);
                 var stream = provider.GetStream<WhiteJoinedGame> (seat.GetPrimaryKey (), nameof (WhiteJoinedGame));
                 await stream.OnNextAsync (new WhiteJoinedGame (playerId));
                 return new Success<Common.BoardState> (new Common.BoardState (boardState));
@@ -71,7 +78,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 await seat.WriteStateAsync ();
                 var game = seat.GrainFactory.GetGrain<IGame> (seat.GetPrimaryKey ());
                 var boardState = await game.GetBoardState ();
-                var provider = seat.GetStreamProvider (Constants.PlayerSeatEventStream);
+                var provider = seat.GetStreamProvider (seat.PlayerSeatStreamProvider);
                 var stream = provider.GetStream<WhiteLeftGame> (seat.GetPrimaryKey (), nameof (WhiteLeftGame));
                 await stream.OnNextAsync (new WhiteLeftGame (playerId));
                 return new Success<Common.BoardState> (new Common.BoardState (boardState));
