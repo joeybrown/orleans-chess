@@ -7,14 +7,15 @@ using OrleansChess.GrainInterfaces.Chess;
 
 namespace OrleansChess.Grains.Tests.Extensions {
     public static class GameExtensions {
-        public static Task<ISuccessOrErrors<IBoardState>> BothPlayersJoinGame (this IGame game) => game.WhiteJoinGame (Guid.NewGuid ()).Then (eTag => game.BlackJoinGame (Guid.NewGuid ()));
-        public static Task<ISuccessOrErrors<IBoardState>> BothPlayersJoinGame (this IGame inputGame, out IGame game) {
-            game = inputGame;
-            return game.BothPlayersJoinGame ();
-        }
-        public static IGame NewGame (this TestKitSilo silo) => silo.NewGame (Guid.NewGuid ());
-        public static IGame NewGame (this TestKitSilo silo, Guid guid) {
-            return silo.CreateGrain<Game> (id: guid);
+        public static async Task BothPlayersJoinGame (this TestKitSilo silo, Guid guid) {
+            var whitePlayerId = Guid.NewGuid();
+            var blackPlayerId = Guid.NewGuid();            
+            
+            var whiteSeat = silo.CreateGrain<SeatWhite>(id: guid);
+            await whiteSeat.JoinGame(whitePlayerId);
+
+            var blackSeat = silo.CreateGrain<SeatBlack>(id: guid);
+            await blackSeat.JoinGame(blackPlayerId);
         }
     }
 }

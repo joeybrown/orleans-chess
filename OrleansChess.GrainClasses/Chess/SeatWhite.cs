@@ -23,6 +23,11 @@ namespace OrleansChess.GrainClasses.Chess {
             PlayerSeatStreamProvider = playerSeatStreamProvider.Name;
         }
 
+        public override Task OnActivateAsync() {
+            Behavior = BehaviorFactory.Build(this.State.BehaviorState);
+            return base.OnActivateAsync();
+        }
+
         public Task<ISuccessOrErrors<Common.BoardState>> JoinGame (Guid playerId) => Behavior.JoinGame (this, playerId);
 
         public Task<ISuccessOrErrors<Common.BoardState>> LeaveGame () => Behavior.LeaveGame (this);
@@ -55,12 +60,13 @@ namespace OrleansChess.GrainClasses.Chess {
                 seat.State.PlayerId = playerId;
                 seat.State.ETag = Guid.NewGuid ().ToString ();
                 await seat.WriteStateAsync ();
-                var game = seat.GrainFactory.GetGrain<IGame> (seat.GetPrimaryKey ());
+                var game = seat.GrainFactory.GetGrain<IGame> (seat.GetPrimaryKey());
                 var boardState = await game.GetBoardState ();
                 var provider = seat.GetStreamProvider (seat.PlayerSeatStreamProvider);
                 var stream = provider.GetStream<WhiteJoinedGame> (seat.GetPrimaryKey (), nameof (WhiteJoinedGame));
                 await stream.OnNextAsync (new WhiteJoinedGame (playerId));
-                return new Success<Common.BoardState> (new Common.BoardState (boardState));
+                var result = new Success<Common.BoardState> (new Common.BoardState (boardState));
+                return result;
             }
 
             public Task<ISuccessOrErrors<Common.BoardState>> LeaveGame (SeatWhite seat) => new Error<Common.BoardState> ("No player at seat").ToTask ();
@@ -82,6 +88,7 @@ namespace OrleansChess.GrainClasses.Chess {
                 var stream = provider.GetStream<WhiteLeftGame> (seat.GetPrimaryKey (), nameof (WhiteLeftGame));
                 await stream.OnNextAsync (new WhiteLeftGame (playerId));
                 return new Success<Common.BoardState> (new Common.BoardState (boardState));
+
             }
         }
     }
