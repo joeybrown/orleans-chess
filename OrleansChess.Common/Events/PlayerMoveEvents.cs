@@ -29,7 +29,7 @@ namespace OrleansChess.Common.Events {
             Fen = boardState.Fen;
             OriginalPosition = boardState.OriginalPosition;
             NewPosition = boardState.NewPosition;
-            ETag = ETag;
+            ETag = boardState.ETag;
         }
 
         public WhiteMoved (string fen, string originalPosition, string newPosition, string eTag) {

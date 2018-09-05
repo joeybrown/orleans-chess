@@ -22,16 +22,22 @@ namespace OrleansChess.GrainClasses.Chess {
     [StorageProvider (ProviderName = GrainPersistence.GameStateStore)]
     public partial class Board : Grain<BoardState>, IBoard {
         private string PlayerMoveStreamProvider { get; }
+
+        public override Task OnActivateAsync() {
+            Behavior = BehaviorFactory.Build(State.BehaviorState);
+            return base.OnActivateAsync();
+        }
+
         public Board (IPlayerMoveStreamProvider playerMoveStreamProvider) {
             PlayerMoveStreamProvider = playerMoveStreamProvider.Name;
         }
 
         public Task<ISuccessOrErrors<BlackMoved>> BlackMove (string originalPosition, string newPosition, string eTag) {
-            throw new System.NotImplementedException ();
+            return Behavior.BlackMove(this, originalPosition, newPosition, eTag);
         }
 
         public Task<ISuccessOrErrors<WhiteMoved>> WhiteMove (string originalPosition, string newPosition, string eTag) {
-            throw new System.NotImplementedException ();
+            return Behavior.WhiteMove(this, originalPosition, newPosition, eTag);
         }
 
         private IBehavior Behavior { get; set; }
@@ -66,17 +72,17 @@ namespace OrleansChess.GrainClasses.Chess {
                     var isValid = await game.IsValidMove (move);
                     if (!isValid)
                         return new Error<WhiteMoved> ("Not a valid move");
-                    var boardState = (WhiteMoved) await game.ApplyValidatedMove (move);
+                    var boardState = await game.ApplyValidatedMove (move);
                     board.Behavior = new BlackTurn ();
                     board.State.BehaviorState = TurnBehaviorStateOption.Black;
                     board.State.ETag = Guid.NewGuid ().ToString ();
                     await board.WriteStateAsync ();
                     var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
-                    var stream = provider.GetStream<WhiteMoved> (game.GetPrimaryKey (), nameof (WhiteMoved));
-                    await stream.OnNextAsync (new WhiteMoved (boardState));
-                    return new Success<WhiteMoved> (boardState);
+                    var stream = provider.GetStream<WhiteMoved> (board.GetPrimaryKey (), nameof (WhiteMoved));
+                    var whiteMoved = new WhiteMoved (boardState);
+                    await stream.OnNextAsync (whiteMoved);
+                    return new Success<WhiteMoved> (whiteMoved);
                 }
-
                 return CompareETagAndExecute.Go (board.State.ETag, eTag, WhiteMoveDelegate);
             }
         }
@@ -97,7 +103,7 @@ namespace OrleansChess.GrainClasses.Chess {
                     board.State.ETag = Guid.NewGuid ().ToString ();
                     await board.WriteStateAsync ();
                     var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
-                    var stream = provider.GetStream<BlackMoved> (game.GetPrimaryKey (), nameof (BlackMoved));
+                    var stream = provider.GetStream<BlackMoved> (board.GetPrimaryKey (), nameof (BlackMoved));
                     await stream.OnNextAsync (new BlackMoved (boardState));
                     return new Success<BlackMoved> (boardState);
                 }
