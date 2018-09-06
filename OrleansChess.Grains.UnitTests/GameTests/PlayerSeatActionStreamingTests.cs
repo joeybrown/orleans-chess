@@ -12,18 +12,24 @@ using Xunit;
 
 namespace OrleansChess.Grains.UnitTests.GameTests {
     public class PlayerSeatActionStreamingTests : TestKitBase {
-        [Fact]
-        public async Task OnGameCreationWhenWhiteJoins_Should_StreamEvent () {
+
+        private TestKitSilo BuildSut(Guid gameId) {
             var mockStreamProvider = new Mock<IPlayerSeatStreamProvider> ();
             mockStreamProvider.SetupGet (x => x.Name).Returns ("Default");
             Silo.AddServiceProbe (mockStreamProvider);
-            var gameId = Guid.NewGuid ();
             var game = Silo.AddProbe<IGame> (gameId);
             game.Setup (x => x.GetBoardState ()).Returns (new Common.BoardState ("fen", "orig", "new", "eTag").ToTask ());
-            var stream = Silo.AddStreamProbe<WhiteJoinedGame> (gameId, nameof (WhiteJoinedGame));
+            return Silo;
+        }
+
+        [Fact]
+        public async Task OnGameCreationWhenWhiteJoins_Should_StreamEvent () {
+            var gameId = Guid.NewGuid();
+            var sut = BuildSut(gameId);
+            var stream = sut.AddStreamProbe<WhiteJoinedGame> (gameId, nameof (WhiteJoinedGame));
             
             var whiteId = Guid.NewGuid ();
-            var whiteSeat = Silo.CreateGrain<SeatWhite> (id: gameId);
+            var whiteSeat = sut.CreateGrain<SeatWhite> (id: gameId);
             await whiteSeat.JoinGame (whiteId);
 
             stream.Sends.Should ().Be (1);
@@ -32,12 +38,8 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
 
         [Fact]
         public async Task OnGameCreationWhenBlackJoins_Should_StreamEvent () {
-            var mockStreamProvider = new Mock<IPlayerSeatStreamProvider> ();
-            mockStreamProvider.SetupGet (x => x.Name).Returns ("Default");
-            Silo.AddServiceProbe (mockStreamProvider);
             var gameId = Guid.NewGuid ();
-            var game = Silo.AddProbe<IGame> (gameId);
-            game.Setup (x => x.GetBoardState ()).Returns (new Common.BoardState ("fen", "orig", "new", "eTag").ToTask ());
+            var sut = BuildSut(gameId);
             var stream = Silo.AddStreamProbe<BlackJoinedGame> (gameId, nameof (BlackJoinedGame));
             
             var blackId = Guid.NewGuid ();
