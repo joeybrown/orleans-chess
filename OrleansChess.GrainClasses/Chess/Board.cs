@@ -75,7 +75,7 @@ namespace OrleansChess.GrainClasses.Chess {
                     var boardState = await game.ApplyValidatedMove (move);
                     board.Behavior = new BlackTurn ();
                     board.State.BehaviorState = TurnBehaviorStateOption.Black;
-                    board.State.ETag = Guid.NewGuid ().ToString ();
+                    board.State.ETag = boardState.ETag;
                     await board.WriteStateAsync ();
                     var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
                     var stream = provider.GetStream<WhiteMoved> (board.GetPrimaryKey (), nameof (WhiteMoved));
@@ -97,15 +97,16 @@ namespace OrleansChess.GrainClasses.Chess {
                     var isValid = await game.IsValidMove (move);
                     if (!isValid)
                         return new Error<BlackMoved> ("Not a valid move");
-                    var boardState = (BlackMoved) await game.ApplyValidatedMove (move);
+                    var boardState = await game.ApplyValidatedMove (move);
                     board.Behavior = new WhiteTurn ();
                     board.State.BehaviorState = TurnBehaviorStateOption.White;
-                    board.State.ETag = Guid.NewGuid ().ToString ();
+                    board.State.ETag = boardState.ETag;
                     await board.WriteStateAsync ();
                     var provider = board.GetStreamProvider (board.PlayerMoveStreamProvider);
                     var stream = provider.GetStream<BlackMoved> (board.GetPrimaryKey (), nameof (BlackMoved));
-                    await stream.OnNextAsync (new BlackMoved (boardState));
-                    return new Success<BlackMoved> (boardState);
+                    var blackMoved = new BlackMoved (boardState);
+                    await stream.OnNextAsync (blackMoved);
+                    return new Success<BlackMoved> (blackMoved);
                 }
 
                 return CompareETagAndExecute.Go (board.State.ETag, eTag, BlackMoveDelegate);
