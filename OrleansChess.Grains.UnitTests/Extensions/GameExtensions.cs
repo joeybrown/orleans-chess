@@ -5,7 +5,7 @@ using OrleansChess.Common;
 using OrleansChess.GrainClasses.Chess;
 using OrleansChess.GrainInterfaces.Chess;
 
-namespace OrleansChess.Grains.Tests.Extensions {
+namespace OrleansChess.Grains.UnitTests.Extensions {
     public static class GameExtensions {
         public static async Task BothPlayersJoinGame (this TestKitSilo silo, Guid guid) {
             var whitePlayerId = Guid.NewGuid();
