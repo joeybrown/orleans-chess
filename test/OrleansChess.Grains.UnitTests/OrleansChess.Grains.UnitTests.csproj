@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OrleansChess.GrainInterfaces\OrleansChess.GrainInterfaces.csproj" />
-    <ProjectReference Include="..\OrleansChess.GrainClasses\OrleansChess.GrainClasses.csproj" />
+    <ProjectReference Include="..\..\src\OrleansChess.GrainInterfaces\OrleansChess.GrainInterfaces.csproj" />
+    <ProjectReference Include="..\..\src\OrleansChess.GrainClasses\OrleansChess.GrainClasses.csproj" />
   </ItemGroup>
 
   <ItemGroup>
