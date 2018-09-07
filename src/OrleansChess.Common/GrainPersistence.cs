@@ -1,4 +1,4 @@
-namespace OrleansChess.GrainClasses {
+namespace OrleansChess.Common {
     public static class GrainPersistence {
         public const string SeatWhiteStateStore = nameof(SeatWhiteStateStore);
         public const string SeatBlackStateStore = nameof(SeatBlackStateStore);
