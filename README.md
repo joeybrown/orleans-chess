@@ -1,4 +1,4 @@
-![Orleans Chess Logo](logo.png?raw=true)
+![Orleans Chess Logo](logo_sm.png?raw=true)
 
 # Orleans Chess
 
