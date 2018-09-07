@@ -41,42 +41,5 @@ namespace OrleansChess.Grains.Tests.GameTests {
             var result = await blackSeat.JoinGame(playerId);
             result.WasSuccessful.Should().BeTrue();
         }
-
-//         [Fact]
-//         public async Task AfterWhiteJoin_ShouldNot_AllowWhite () {
-//             var game = Silo.CreateGrain<Game> (Guid.NewGuid ());
-//             await game.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//             await game.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
-//         }
-
-//         [Fact]
-//         public async Task AfterBlackJoin_ShouldNot_AllowBlack () {
-//             var game = Silo.CreateGrain<Game> (Guid.NewGuid ());
-//             await game.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());;
-//             await game.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
-//         }
-
-//         [Fact]
-//         public async Task AfterWhiteJoin_Should_AllowBlack () {
-//             var game = Silo.CreateGrain<Game> (Guid.NewGuid ());
-//             await game.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//             await game.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//         }
-
-//         [Fact]
-//         public async Task AfterBlackJoin_Should_AllowWhite () {
-//             var game = Silo.CreateGrain<Game> (Guid.NewGuid ());
-//             await game.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//             await game.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//         }
-
-//         [Fact]
-//         public async Task AfterBlackAndWhiteJoin_ShouldNot_AllowWhiteOrBlack () {
-//             var grain = Silo.CreateGrain<Game> (Guid.NewGuid ());
-//             await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//             await grain.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeTrue ());
-//             await grain.BlackJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
-//             await grain.WhiteJoinGame (Guid.NewGuid ()).ContinueWith (x => x.Result.WasSuccessful.Should ().BeFalse ());
-//         }
     }
 }
