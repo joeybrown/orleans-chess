@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using OrleansChess.Common;
 using OrleansChess.GrainClasses.Chess;
 
 namespace OrleansSiloHost
@@ -40,7 +41,14 @@ namespace OrleansSiloHost
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                .AddMemoryGrainStorage("GameStateStore")
+                .AddMemoryGrainStorage(GrainPersistence.SeatWhiteStateStore)
+                .AddMemoryGrainStorage(GrainPersistence.SeatBlackStateStore)
+                .AddMemoryGrainStorage(GrainPersistence.BoardStateStore)
+                .AddMemoryGrainStorage(GrainPersistence.GameStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.SeatWhiteStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.SeatBlackStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.BoardStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.GameStateStore)
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
