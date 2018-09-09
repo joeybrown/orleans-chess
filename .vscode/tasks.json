@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/OrleansChess.Web/OrleansChess.Web.csproj"
+                "${workspaceFolder}/src/OrleansChess.Web/OrleansChess.Web.csproj"
             ],
             "problemMatcher": "$msCompile"
         }

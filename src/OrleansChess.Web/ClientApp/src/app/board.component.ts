@@ -7,7 +7,7 @@ import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/skip';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { IMove } from './utilities/IMove';
-import curry from 'lodash/curry';
+import { curry } from 'lodash';
 
 declare var ChessBoard;
 
@@ -87,20 +87,20 @@ export class BoardComponent implements OnInit {
 
         var move = { source: source, target: target };
         this.isValidating.next(move);
-        this.boardService.tryMove(oldFen, newFen).subscribe(
-            canMove => {
-                if (!canMove.successful) {
-                    moveBack(move, oldFen);
-                    return;
-                }
-                this.mostRecentValidMove.next(move);
-                this.board.position(canMove.fen);
-            },
-            error => {
-                console.log(error)
-                moveBack(move, oldFen);
-            },
-            () => this.isValidating.next(null));
+        // this.boardService.tryMove(oldFen, newFen).subscribe(
+        //     canMove => {
+        //         if (!canMove.successful) {
+        //             moveBack(move, oldFen);
+        //             return;
+        //         }
+        //         this.mostRecentValidMove.next(move);
+        //         this.board.position(canMove.fen);
+        //     },
+        //     error => {
+        //         console.log(error)
+        //         moveBack(move, oldFen);
+        //     },
+        //     () => this.isValidating.next(null));
     };
 
     private boardConfig = {
