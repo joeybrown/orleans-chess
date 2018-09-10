@@ -1,8 +1,10 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Orleans;
 using OrleansChess.Common;
+using OrleansChess.Common.Events;
 using OrleansChess.GrainInterfaces.Chess;
 
 public class ChessHub : Hub 
@@ -18,55 +20,43 @@ public class ChessHub : Hub
     {
     }
 
-    public async Task<ISuccessOrErrors<WhiteJoined>> WhiteJoinGame(Guid gameId){
-        var whiteId = Guid.NewGuid();
-        var game = _orleansClient.GetGrain<IGame>(gameId);
-        var result = await game.WhiteJoinGame(whiteId);
+    public async Task<ISuccessOrErrors<IBoardState>> GetBoardState(string gameId) {
+        var gameGuid = Guid.Parse(gameId);
+        var game = _orleansClient.GetGrain<IGame>(gameGuid);
+        var boardState = await game.GetBoardState();
+        return new Success<IBoardState>(boardState);
+    }
+
+    public async Task<ISuccessOrErrors<BoardState>> WhiteJoinGame(Guid gameId){
+        var identity = (ClaimsIdentity) Context.User.Identity;
+        var playerId = Guid.Parse (identity.FindFirst("userId").Value);
+        var seat = _orleansClient.GetGrain<ISeatWhite>(gameId);
+        var result = await seat.JoinGame(playerId);
         if (result.WasSuccessful) {
-            await WhiteJoined(gameId.ToString());
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
         }
         return result;
     }
 
-    public async Task<ISuccessOrErrors<IBoardStateWithETag>> WhiteMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
-        var game = _orleansClient.GetGrain<IGame>(gameId);
-        var result = await game.WhiteMove(originalPosition, newPosition, eTag);
-        if (result.WasSuccessful) {
-            await PositionUpdated(gameId.ToString(), result.Data);
-        }
+    public async Task<ISuccessOrErrors<WhiteMoved>> WhiteMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+        var board = _orleansClient.GetGrain<IBoard>(gameId);
+        var result = await board.WhiteMove(originalPosition, newPosition, eTag);
         return result;
     }
 
-    public async Task PositionUpdated(string gameId, IBoardStateWithETag fen) {
-        await Clients.Group(gameId).SendAsync(nameof(PositionUpdated), fen);
-    }
-
-    public async Task WhiteJoined(string gameId) {
-        await Clients.Group(gameId).SendAsync(nameof(WhiteJoined));
-    }
-
-    public async Task BlackJoined(string gameId) {
-        await Clients.Group(gameId).SendAsync(nameof(BlackJoined));
-    }
-
-    public async Task<ISuccessOrErrors<IBoardStateWithETag>> BlackJoinGame(Guid gameId){
-        var blackId = Guid.NewGuid();
-        var game = _orleansClient.GetGrain<IGame>(gameId);
-        var result = await game.BlackJoinGame(blackId);
+    public async Task<ISuccessOrErrors<BoardState>> BlackJoinGame(Guid gameId){
+        var playerId = Guid.NewGuid(); // todo: user should have guid
+        var seat = _orleansClient.GetGrain<ISeatBlack>(gameId);
+        var result = await seat.JoinGame(playerId);
         if (result.WasSuccessful) {
-            await BlackJoined(gameId.ToString());
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
         }
         return result;
     }
 
-    public async Task<ISuccessOrErrors<IBoardStateWithETag>> BlackMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
-        var game = _orleansClient.GetGrain<IGame>(gameId);
-        var result = await game.BlackMove(originalPosition, newPosition, eTag);
-        if (result.WasSuccessful) {
-            await PositionUpdated(gameId.ToString(), result.Data);
-        }
+    public async Task<ISuccessOrErrors<BlackMoved>> BlackMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+        var board = _orleansClient.GetGrain<IBoard>(gameId);
+        var result = await board.BlackMove(originalPosition, newPosition, eTag);
         return result;
     }
 

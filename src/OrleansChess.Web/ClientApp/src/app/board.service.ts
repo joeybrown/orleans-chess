@@ -4,41 +4,26 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { of } from 'rxjs/observable/of';
 import { fromPromise } from 'rxjs/observable/fromPromise';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Subject } from "rxjs/Subject";
 import { HubConnection } from "@aspnet/signalr";
 import * as signalR from "@aspnet/signalr";
-
-export interface ISuccessOrErrors<T> {
-    readonly data: T;
-    readonly wasSuccessful: boolean;
-    readonly errors: string[];
-}
-
-export interface IValueWithETag<T> {
-    readonly value: T;
-    readonly eTag: string;
-}
-
-export interface IFenWithETag extends IValueWithETag<string> {
-
-}
+import { BoardState } from "./models/BoardState";
+import { SuccessOrErrors } from "./models/SuccessOrErrors";
 
 @Injectable()
 export class BoardService {
     private connection: HubConnection;
 
-    private fen = new Subject<IFenWithETag>();
-
     constructor(private appHttpService: AppHttpService) {
     }
 
-    private gameSeatActivity: (method: string, gameId: string) => Observable<ISuccessOrErrors<IFenWithETag>> =
+    private gameSeatActivity: (method: string, gameId: string) => Observable<SuccessOrErrors<BoardState>> =
         (method: string, gameId: string) =>
             fromPromise(this.connection.invoke(method, gameId))
                 .pipe(catchError(error => of(`Error: ${error}`)));
 
-    private playerMove: (method: string, gameId: string, originalPosition: string, newPosition: string, eTag: string) => Observable<ISuccessOrErrors<IFenWithETag>> =
+    private playerMove: (method: string, gameId: string, originalPosition: string, newPosition: string, eTag: string) => Observable<SuccessOrErrors<BoardState>> =
         (method, gameId, originalPosition, newPosition, eTag) =>
             fromPromise(this.connection.invoke(method, gameId, originalPosition))
                 .pipe(catchError(error => of(`Error: ${error}`)));
@@ -53,30 +38,26 @@ export class BoardService {
 
     blackJoinGame = gameId => this.gameSeatActivity("BlackJoinGame", gameId);
 
-    fenStream = this.fen.asObservable();
-
-    initialize: () => Observable<string> = () => {
-
-        var fen = new Subject<string>();
+    ensureConnectionInitialized = () => {
+        if (this.connection)
+            Observable.of(null);
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl("/chesshub")
             .build();
 
-        this.connection.on("PositionUpdated", (newFen: IFenWithETag) => {
-            this.fen.next(newFen);
-        });
+        // this.connection.on("BlackJoined", () => {
+        //     console.log("Black joined.")
+        // });
 
-        this.connection.on("BlackJoined", () => {
-            console.log("Black joined.")
-        });
-
-        this.connection.on("WhiteJoined", () => {
-            console.log("White joined.")
-        });
-
-        this.connection.start().catch(err => console.error(err.toString()));
-
-        return fen;
+        // this.connection.on("WhiteJoined", () => {
+        //     console.log("White joined.")
+        // });
+        return fromPromise(this.connection.start().catch(err => console.error(err.toString())));
     }
+
+    getBoardState = gameId =>
+        this.ensureConnectionInitialized()
+            .pipe(switchMap(x=>fromPromise(this.connection.invoke("GetBoardState", gameId))))
+            .pipe(catchError(error => of(`Error: ${error}`)));
 }

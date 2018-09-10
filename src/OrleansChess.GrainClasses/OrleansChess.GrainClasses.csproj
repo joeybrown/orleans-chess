@@ -6,7 +6,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OrleansChess.GrainInterfaces\OrleansChess.GrainInterfaces.csproj" />
-    <ProjectReference Include="..\OrleansChess.Common\OrleansChess.Common.csproj" />
   </ItemGroup>
 
   <ItemGroup>
