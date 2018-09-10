@@ -11,6 +11,7 @@ import { curry } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { BoardState } from './models/BoardState';
 import { SuccessOrErrors } from './models/SuccessOrErrors';
+import { IBoardOrientation, BlackBoardOrientation, WhiteBoardOrientation } from './models/BoardOrientation';
 
 declare var ChessBoard;
 
@@ -78,11 +79,11 @@ class SeatBlackBehavior implements ISeatBehavior {
 }
 
 class SeatBehaviorFactory {
-    static buildSeatBehavior(orientation: 'black' | 'white') {
-        switch (orientation) {
-            case ('black'):
+    static buildSeatBehavior(orientation: IBoardOrientation) {
+        switch (typeof(orientation)) {
+            case (typeof(BlackBoardOrientation)):
                 return new SeatBlackBehavior();
-            case ('white'):
+            case (typeof(WhiteBoardOrientation)):
                 return new SeatWhiteBehavior();
             default:
                 throw('Unknown orientation');
@@ -97,9 +98,9 @@ class SeatBehaviorFactory {
     providers: [BoardService]
 })
 export class BoardComponent implements OnInit {
-    @Input() orientation: 'black' | 'white';
+    @Input() orientation: IBoardOrientation;
     @Input() size: number;
-    @Input() boardId: string;
+    @Input() gameId: string;
 
     private board: any;
     private seatBehavior: ISeatBehavior;
@@ -111,9 +112,9 @@ export class BoardComponent implements OnInit {
     private mostRecentValidMove = new BehaviorSubject<IMove>(null);
 
     private movedPiece = BoardComponentHelpers.movedPiece;
-    private removeSquareClass = curry(BoardComponentHelpers.removeSquareClass)(this.boardId);
-    private addSquareClass = curry(BoardComponentHelpers.addSquareClass)(this.boardId);
-    private setNewActiveCssClass = curry(BoardComponentHelpers.setNewActiveCssClass)(this.boardId);
+    private removeSquareClass = curry(BoardComponentHelpers.removeSquareClass)(this.gameId);
+    private addSquareClass = curry(BoardComponentHelpers.addSquareClass)(this.gameId);
+    private setNewActiveCssClass = curry(BoardComponentHelpers.setNewActiveCssClass)(this.gameId);
 
     private onDrop = (source, target, piece, newPos, oldPos, orientation) => {
         // const moveBack = (moveToUndo: IMove, fen: string) => {
@@ -155,13 +156,15 @@ export class BoardComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.seatBehavior = SeatBehaviorFactory.buildSeatBehavior(this.orientation);
+        // this.seatBehavior = SeatBehaviorFactory.buildSeatBehavior(this.orientation);
+        // don't set seat based on orientation.
 
-        this.boardService.getBoardState(this.boardId).subscribe(x => {
+
+        this.boardService.getBoardState(this.gameId).subscribe(x => {
             if (x.wasSuccessful) {
                 const boardConfig = this.boardConfig;
                 boardConfig.start = x.data.fen;
-                this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
+                this.board = ChessBoard(`board-${this.gameId}`, boardConfig);
                 this.board.start();
                 if (this.seatBehavior.shouldFlipOrientation) {
                     this.board.flip();

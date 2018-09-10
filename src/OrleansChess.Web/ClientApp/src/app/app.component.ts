@@ -1,37 +1,32 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
+import { Color, WhiteBoardOrientation, BlackBoardOrientation, IBoardOrientation } from './models/BoardOrientation';
+import { LocationService } from './location.service';
 
-const getQueryStringVal = (key) => {
-  var keyValuePairs = location.search.substring(1).split('&').map(x => {
-    const split = x.split('=');
-    return {
-      key: split[0],
-      value: split[1]
-    }
-  });
-  var kvp = keyValuePairs.find(x => x.key === key);
-  if (!kvp)
-    return;
-  return kvp.value;
+class BoardOrientationFactory {
+  static BuildOrientation(orientation: string) {
+    if (orientation === 'black')
+      return new BlackBoardOrientation();
+    return new WhiteBoardOrientation();
+  }
 }
-
-const defaultColor = 'black';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'
 })
 export class AppComponent implements OnInit {
+  constructor(private readonly locationService: LocationService) {
+  }
+
   ngOnInit(): void {
     this.setBoardOrientation();
   }
 
   private setBoardOrientation() {
-    var orientationFromQs = getQueryStringVal('color');
-    this.boardOrientation = orientationFromQs || defaultColor;
+    var orientationFromQs = this.locationService.getQueryStringVal('color');
+    this.boardOrientation = BoardOrientationFactory.BuildOrientation(orientationFromQs);
   }
 
-  private boardOrientation: string;
-
-
+  private boardOrientation: IBoardOrientation;
 }
