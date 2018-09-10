@@ -1,4 +1,5 @@
 using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Orleans;
@@ -19,8 +20,16 @@ public class ChessHub : Hub
     {
     }
 
+    public async Task<ISuccessOrErrors<IBoardState>> GetBoardState(string gameId) {
+        var gameGuid = Guid.Parse(gameId);
+        var game = _orleansClient.GetGrain<IGame>(gameGuid);
+        var boardState = await game.GetBoardState();
+        return new Success<IBoardState>(boardState);
+    }
+
     public async Task<ISuccessOrErrors<BoardState>> WhiteJoinGame(Guid gameId){
-        var playerId = Guid.NewGuid(); // todo: user should have guid
+        var identity = (ClaimsIdentity) Context.User.Identity;
+        var playerId = Guid.Parse (identity.FindFirst("userId").Value);
         var seat = _orleansClient.GetGrain<ISeatWhite>(gameId);
         var result = await seat.JoinGame(playerId);
         if (result.WasSuccessful) {

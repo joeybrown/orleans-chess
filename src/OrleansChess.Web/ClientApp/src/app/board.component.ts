@@ -156,7 +156,8 @@ export class BoardComponent implements OnInit {
 
     ngOnInit(): void {
         this.seatBehavior = SeatBehaviorFactory.buildSeatBehavior(this.orientation);
-        this.seatBehavior.joinGame(this.boardService, this.boardId).subscribe(x => {
+
+        this.boardService.getBoardState(this.boardId).subscribe(x => {
             if (x.wasSuccessful) {
                 const boardConfig = this.boardConfig;
                 boardConfig.start = x.data.fen;
@@ -167,6 +168,17 @@ export class BoardComponent implements OnInit {
                 }
             }
         });
+        // this.seatBehavior.joinGame(this.boardService, this.boardId).subscribe(x => {
+        //     if (x.wasSuccessful) {
+        //         const boardConfig = this.boardConfig;
+        //         boardConfig.start = x.data.fen;
+        //         this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
+        //         this.board.start();
+        //         if (this.seatBehavior.shouldFlipOrientation) {
+        //             this.board.flip();
+        //         }
+        //     }
+        // });
 
         // var fenStream = this.boardService.initialize().subscribe(fen => {
         //     const boardConfig = this.boardConfig;

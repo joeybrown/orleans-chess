@@ -4,7 +4,7 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import { of } from 'rxjs/observable/of';
 import { fromPromise } from 'rxjs/observable/fromPromise';
-import { catchError, map } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { Subject } from "rxjs/Subject";
 import { HubConnection } from "@aspnet/signalr";
 import * as signalR from "@aspnet/signalr";
@@ -38,9 +38,9 @@ export class BoardService {
 
     blackJoinGame = gameId => this.gameSeatActivity("BlackJoinGame", gameId);
 
-    initialize: () => Observable<string> = () => {
-
-        var fen = new Subject<string>();
+    ensureConnectionInitialized = () => {
+        if (this.connection)
+            Observable.of(null);
 
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl("/chesshub")
@@ -53,9 +53,11 @@ export class BoardService {
         // this.connection.on("WhiteJoined", () => {
         //     console.log("White joined.")
         // });
-
-        this.connection.start().catch(err => console.error(err.toString()));
-
-        return fen;
+        return fromPromise(this.connection.start().catch(err => console.error(err.toString())));
     }
+
+    getBoardState = gameId =>
+        this.ensureConnectionInitialized()
+            .pipe(switchMap(x=>fromPromise(this.connection.invoke("GetBoardState", gameId))))
+            .pipe(catchError(error => of(`Error: ${error}`)));
 }
