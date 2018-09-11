@@ -1,5 +1,3 @@
-using ChessDotNet;
-
 namespace OrleansChess.Common { 
     public interface IPlayerMove {
         string OriginalPosition { get; set; }
