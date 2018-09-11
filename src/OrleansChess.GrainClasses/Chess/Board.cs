@@ -16,8 +16,8 @@ namespace OrleansChess.GrainClasses.Chess {
         public object State { get; set; }
         public string OriginalPosition { get; set; }
         public string NewPosition { get; set; }
-        public Color PlayerIColor { get; set; } = new Color("red");
-        public Color PlayerIIColor { get; set; } = new Color("blue");
+        public Color PlayerIColor { get; set; } = new Color("white");
+        public Color PlayerIIColor { get; set; } = new Color("black");
     }
 
     [StorageProvider (ProviderName = GrainPersistence.GameStateStore)]

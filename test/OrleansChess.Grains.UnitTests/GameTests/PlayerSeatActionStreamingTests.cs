@@ -7,7 +7,6 @@ using OrleansChess.Common;
 using OrleansChess.Common.Events;
 using OrleansChess.GrainClasses.Chess;
 using OrleansChess.GrainInterfaces.Chess;
-using OrleansChess.Grains.UnitTests.Extensions;
 using Xunit;
 
 namespace OrleansChess.Grains.UnitTests.GameTests {
@@ -23,31 +22,31 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
         }
 
         [Fact]
-        public async Task OnGameCreationWhenWhiteJoins_Should_StreamEvent () {
+        public async Task OnGameCreationWhenPlayerIJoins_Should_StreamEvent () {
             var gameId = Guid.NewGuid();
             var sut = BuildSut(gameId);
             var stream = sut.AddStreamProbe<PlayerTookSeatI> (gameId, nameof (PlayerTookSeatI));
             
-            var whiteId = Guid.NewGuid ();
-            var whiteSeat = sut.CreateGrain<GrainClasses.Chess.SeatI> (id: gameId);
-            await whiteSeat.JoinGame (whiteId);
+            var playerIId = Guid.NewGuid ();
+            var playerISeat = sut.CreateGrain<GrainClasses.Chess.SeatI> (id: gameId);
+            await playerISeat.JoinGame (playerIId);
 
             stream.Sends.Should ().Be (1);
-            stream.VerifySend (x => x.PlayerId == whiteId);
+            stream.VerifySend (x => x.PlayerId == playerIId);
         }
 
         [Fact]
-        public async Task OnGameCreationWhenBlackJoins_Should_StreamEvent () {
+        public async Task OnGameCreationWhenPlayerIIJoins_Should_StreamEvent () {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
             var stream = Silo.AddStreamProbe<PlayerTookSeatII> (gameId, nameof (PlayerTookSeatII));
             
-            var blackId = Guid.NewGuid ();
-            var blackSeat = Silo.CreateGrain<SeatII> (id: gameId);
-            await blackSeat.JoinGame (blackId);
+            var playerId = Guid.NewGuid ();
+            var playerSeat = Silo.CreateGrain<SeatII> (id: gameId);
+            await playerSeat.JoinGame (playerId);
 
             stream.Sends.Should ().Be (1);
-            stream.VerifySend (x => x.PlayerId == blackId);
+            stream.VerifySend (x => x.PlayerId == playerId);
         }
     }
 }
