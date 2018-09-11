@@ -4,7 +4,8 @@ import { Color, WhiteBoardOrientation, BlackBoardOrientation, IBoardOrientation 
 import { LocationService } from './location.service';
 
 class BoardOrientationFactory {
-  static BuildOrientation(orientation: string) {
+  static BuildOrientation(orientation: string): IBoardOrientation {
+    console.log(orientation);
     if (orientation === 'black')
       return new BlackBoardOrientation();
     return new WhiteBoardOrientation();
@@ -13,7 +14,8 @@ class BoardOrientationFactory {
 
 @Component({
   selector: 'app-root',
-  templateUrl: './app.component.html'
+  templateUrl: './app.component.html',
+  providers: [LocationService]
 })
 export class AppComponent implements OnInit {
   constructor(private readonly locationService: LocationService) {
@@ -26,7 +28,8 @@ export class AppComponent implements OnInit {
   private setBoardOrientation() {
     var orientationFromQs = this.locationService.getQueryStringVal('color');
     this.boardOrientation = BoardOrientationFactory.BuildOrientation(orientationFromQs);
+    console.log(this.boardOrientation);
   }
 
-  private boardOrientation: IBoardOrientation;
+  public boardOrientation: IBoardOrientation;
 }

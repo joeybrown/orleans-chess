@@ -26,27 +26,27 @@ export class BoardComponentHelpers {
         return true;
     }
 
-    static applyFuncToMove = (boardId: string, move: IMove, applyFunc: (squareEl) => void) => {
+    static applyFuncToMove = (gameId: string, move: IMove, applyFunc: (squareEl) => void) => {
         const squares = [move.source, move.target];
         squares.forEach(x => {
-            const squareEl = $(`#board-${boardId}`).find(`.square-${x}`);
+            const squareEl = $(`#gameId-${gameId}`).find(`.square-${x}`);
             applyFunc(squareEl);
         });
     }
 
-    static removeSquareClass = (boardId: string, move: IMove, cssClass: string) =>
-        BoardComponentHelpers.applyFuncToMove(boardId, move, (squareEl) =>
+    static removeSquareClass = (gameId: string, move: IMove, cssClass: string) =>
+        BoardComponentHelpers.applyFuncToMove(gameId, move, (squareEl) =>
             squareEl.removeClass(cssClass));
 
-    static addSquareClass = (boardId: string, move: IMove, cssClass: string) =>
-        BoardComponentHelpers.applyFuncToMove(boardId, move, (squareEl) =>
+    static addSquareClass = (gameId: string, move: IMove, cssClass: string) =>
+        BoardComponentHelpers.applyFuncToMove(gameId, move, (squareEl) =>
             squareEl.addClass(cssClass));
 
-    static setNewActiveCssClass = (boardId: string, x: { current: IMove, previous: IMove }, cssClass: string) => {
+    static setNewActiveCssClass = (gameId: string, x: { current: IMove, previous: IMove }, cssClass: string) => {
         if (x.previous) 
-            BoardComponentHelpers.removeSquareClass(boardId, x.previous, cssClass);
+            BoardComponentHelpers.removeSquareClass(gameId, x.previous, cssClass);
         if (x.current) 
-            BoardComponentHelpers.addSquareClass(boardId, x.current, cssClass);
+            BoardComponentHelpers.addSquareClass(gameId, x.current, cssClass);
     }
 
     static onDragStart = (isValidating: IMove, source, piece, position, orientation) => !isValidating;
@@ -164,9 +164,10 @@ export class BoardComponent implements OnInit {
             if (x.wasSuccessful) {
                 const boardConfig = this.boardConfig;
                 boardConfig.start = x.data.fen;
-                this.board = ChessBoard(`board-${this.gameId}`, boardConfig);
+                this.board = ChessBoard(`gameId-${this.gameId}`, boardConfig);
                 this.board.start();
-                if (this.seatBehavior.shouldFlipOrientation) {
+
+                if (this.orientation.shouldFlipBoard) {
                     this.board.flip();
                 }
             }
