@@ -9,7 +9,6 @@ using OrleansChess.Common;
 using OrleansChess.Common.Events;
 using OrleansChess.GrainClasses.Chess;
 using OrleansChess.GrainInterfaces.Chess;
-using OrleansChess.Grains.UnitTests.Extensions;
 using Xunit;
 
 namespace OrleansChess.Grains.UnitTests.GameTests {
@@ -21,13 +20,13 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
             Silo.AddServiceProbe (mockStreamProvider);
 
             var game = Silo.AddProbe<IGame> (gameId);
-            game.Setup (x => x.IsValidMove(It.IsAny<Move>())).Returns(Task.FromResult(true));
+            game.Setup (x => x.IsValidMove(It.IsAny<IPlayerMove>())).Returns(Task.FromResult(true));
             var board = Silo.CreateGrain<Board> (id: gameId);
             return (Silo, game, board);
         }
 
         [Fact]
-        public async Task NewGameAfterWhiteMove_Should_RecieveCorrectInformation () {
+        public async Task NewGameAfterPlayerIMove_Should_RecieveCorrectInformation () {
             var gameId = Guid.NewGuid ();
             var (sut, game, board) = BuildSut(gameId);
 
@@ -37,8 +36,8 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
             var resultETag = Guid.NewGuid().ToString();
             IBoardState boardState = new OrleansChess.Common.BoardState(fen, originalPosition, newPosition, resultETag);
             
-            game.Setup (x => x.ApplyValidatedMove(It.IsAny<Move>())).Returns(Task.FromResult(boardState));
-            var result = await board.WhiteMove("A2", "A4", gameId.ToString());
+            game.Setup (x => x.ApplyValidatedMove(It.IsAny<IPlayerMove>())).Returns(Task.FromResult(boardState));
+            var result = await board.PlayerIMove("A2", "A4", gameId.ToString());
             
             result.WasSuccessful.Should().BeTrue();
             result.Data.ETag.Should().Be(resultETag);
@@ -48,63 +47,63 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
         }
 
         [Fact]
-        public async Task NewGameAfterBlackMove_Should_RecieveCorrectInformation () {
+        public async Task NewGameAfterPlayerIIMove_Should_RecieveCorrectInformation () {
             var gameId = Guid.NewGuid ();
             var (sut, game, board) = BuildSut(gameId);
 
-            const string fenAfterWhiteMove = "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR";
-            const string whiteOriginalPosition = "A2";
-            const string whiteNewPosition = "A4";
-            var whiteMoveResultETag = Guid.NewGuid().ToString();
-            IBoardState boardStateAfterWhiteMove = new OrleansChess.Common.BoardState(fenAfterWhiteMove, whiteOriginalPosition, whiteNewPosition, whiteMoveResultETag);
+            const string fenAfterPlayerIMove = "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR";
+            const string playerIOriginalPosition = "A2";
+            const string playerINewPosition = "A4";
+            var playerIMoveResultETag = Guid.NewGuid().ToString();
+            IBoardState boardStateAfterPlayerIMove = new OrleansChess.Common.BoardState(fenAfterPlayerIMove, playerIOriginalPosition, playerINewPosition, playerIMoveResultETag);
             
-            const string fenAfterBlackMove = "rnbqkbnr/pp1ppppp/8/2p5/P7/8/1PPPPPPP/RNBQKBNR";
-            const string blackOriginalPosition = "C7";
-            const string blackNewPosition = "C5";
-            var blackMoveResultETag = Guid.NewGuid().ToString();
-            IBoardState boardStateAfterBlackMove = new OrleansChess.Common.BoardState(fenAfterBlackMove, blackOriginalPosition, blackNewPosition, blackMoveResultETag);
+            const string fenAfterPlayerIIMove = "rnbqkbnr/pp1ppppp/8/2p5/P7/8/1PPPPPPP/RNBQKBNR";
+            const string playerIIOriginalPosition = "C7";
+            const string playerIINewPosition = "C5";
+            var playerIIMoveResultETag = Guid.NewGuid().ToString();
+            IBoardState boardStateAfterPlayerIIMove = new OrleansChess.Common.BoardState(fenAfterPlayerIIMove, playerIIOriginalPosition, playerIINewPosition, playerIIMoveResultETag);
             
             game.SetupSequence(x =>
-                x.ApplyValidatedMove(It.IsAny<Move>()))
-                    .Returns(Task.FromResult(boardStateAfterWhiteMove))
-                    .Returns(Task.FromResult(boardStateAfterBlackMove));
+                x.ApplyValidatedMove(It.IsAny<IPlayerMove>()))
+                    .Returns(Task.FromResult(boardStateAfterPlayerIMove))
+                    .Returns(Task.FromResult(boardStateAfterPlayerIIMove));
 
-            var whiteResult = await board.WhiteMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
-            var result = await board.BlackMove(blackOriginalPosition, blackNewPosition, whiteResult.Data.ETag);
+            var playerIResult = await board.PlayerIMove(playerIOriginalPosition, playerINewPosition, gameId.ToString());
+            var result = await board.PlayerIIMove(playerIIOriginalPosition, playerIINewPosition, playerIResult.Data.ETag);
 
             result.WasSuccessful.Should().BeTrue();
-            result.Data.ETag.Should().Be(blackMoveResultETag);
-            result.Data.Fen.Should().Be(fenAfterBlackMove);
-            result.Data.NewPosition.Should().Be(blackNewPosition);
-            result.Data.OriginalPosition.Should().Be(blackOriginalPosition);
+            result.Data.ETag.Should().Be(playerIIMoveResultETag);
+            result.Data.Fen.Should().Be(fenAfterPlayerIIMove);
+            result.Data.NewPosition.Should().Be(playerIINewPosition);
+            result.Data.OriginalPosition.Should().Be(playerIIOriginalPosition);
         }
 
         [Fact]
-        public async Task NewGameAfterBlackMoveWithWrongETag_Should_ReturnError () {
+        public async Task NewGameAfterPlayerIIMoveWithWrongETag_Should_ReturnError () {
             var gameId = Guid.NewGuid ();
             var (sut, game, board) = BuildSut(gameId);
 
-            const string fenAfterWhiteMove = "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR";
-            const string whiteOriginalPosition = "A2";
-            const string whiteNewPosition = "A4";
-            var whiteMoveResultETag = Guid.NewGuid().ToString();
-            IBoardState boardStateAfterWhiteMove = new OrleansChess.Common.BoardState(fenAfterWhiteMove, whiteOriginalPosition, whiteNewPosition, whiteMoveResultETag);
+            const string fenAfterPlayerIMove = "rnbqkbnr/pppppppp/8/8/P7/8/1PPPPPPP/RNBQKBNR";
+            const string playerIOriginalPosition = "A2";
+            const string playerINewPosition = "A4";
+            var playerIMoveResultETag = Guid.NewGuid().ToString();
+            IBoardState boardStateAfterPlayerIMove = new OrleansChess.Common.BoardState(fenAfterPlayerIMove, playerIOriginalPosition, playerINewPosition, playerIMoveResultETag);
             
-            const string fenAfterBlackMove = "rnbqkbnr/pp1ppppp/8/2p5/P7/8/1PPPPPPP/RNBQKBNR";
-            const string blackOriginalPosition = "C7";
-            const string blackNewPosition = "C5";
-            var blackMoveResultETag = Guid.NewGuid().ToString();
+            const string fenAfterPlayerIIMove = "rnbqkbnr/pp1ppppp/8/2p5/P7/8/1PPPPPPP/RNBQKBNR";
+            const string playerIIOriginalPosition = "C7";
+            const string playerIINewPosition = "C5";
+            var playerIIMoveResultETag = Guid.NewGuid().ToString();
 
-            IBoardState boardStateAfterBlackMove = new OrleansChess.Common.BoardState(fenAfterBlackMove, blackOriginalPosition, blackNewPosition, blackMoveResultETag);
+            IBoardState boardStateAfterPlayerIIMove = new OrleansChess.Common.BoardState(fenAfterPlayerIIMove, playerIIOriginalPosition, playerIINewPosition, playerIIMoveResultETag);
             
             game.SetupSequence(x =>
-                x.ApplyValidatedMove(It.IsAny<Move>()))
-                    .Returns(Task.FromResult(boardStateAfterWhiteMove))
-                    .Returns(Task.FromResult(boardStateAfterBlackMove));
+                x.ApplyValidatedMove(It.IsAny<IPlayerMove>()))
+                    .Returns(Task.FromResult(boardStateAfterPlayerIMove))
+                    .Returns(Task.FromResult(boardStateAfterPlayerIIMove));
 
-            await board.WhiteMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
+            await board.PlayerIMove(playerIOriginalPosition, playerINewPosition, gameId.ToString());
             var wrongETag = Guid.NewGuid().ToString();
-            var result = await board.BlackMove(blackOriginalPosition, blackNewPosition, wrongETag);
+            var result = await board.PlayerIIMove(playerIIOriginalPosition, playerIINewPosition, wrongETag);
 
             result.WasSuccessful.Should().BeFalse();
         }

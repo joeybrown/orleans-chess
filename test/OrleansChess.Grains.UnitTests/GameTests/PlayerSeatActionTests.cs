@@ -21,24 +21,24 @@ namespace OrleansChess.Grains.Tests.GameTests {
         }
 
         [Fact]
-        public async Task EmptyWhiteSeat_Should_AllowWhite () {
+        public async Task EmptyPlayerISeat_Should_AllowPlayerI () {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
 
-            var whiteSeat = sut.CreateGrain<SeatWhite> (gameId);
+            var playerISeat = sut.CreateGrain<GrainClasses.Chess.SeatI> (gameId);
             var playerId = Guid.NewGuid();
-            var result = await whiteSeat.JoinGame(playerId);
+            var result = await playerISeat.JoinGame(playerId);
             result.WasSuccessful.Should().BeTrue();
         }
 
         [Fact]
-        public async Task OnGameCreation_Should_AllowBlack () {
+        public async Task OnGameCreation_Should_AllowPlayerII () {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
             
-            var blackSeat = Silo.CreateGrain<SeatBlack> (gameId);
+            var playerIISeat = Silo.CreateGrain<SeatII> (gameId);
             var playerId = Guid.NewGuid();
-            var result = await blackSeat.JoinGame(playerId);
+            var result = await playerIISeat.JoinGame(playerId);
             result.WasSuccessful.Should().BeTrue();
         }
     }

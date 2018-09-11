@@ -28,15 +28,15 @@ export class BoardService {
             fromPromise(this.connection.invoke(method, gameId, originalPosition))
                 .pipe(catchError(error => of(`Error: ${error}`)));
 
-    whiteJoinGame = gameId => this.gameSeatActivity("WhiteJoinGame", gameId);
+    playerIJoinGame = gameId => this.gameSeatActivity("PlayerIJoinGame", gameId);
 
-    whiteMove = (gameId, originalPosition, newPosition, eTag) =>
-        this.playerMove("WhiteMove", gameId, originalPosition, newPosition, eTag);
+    playerIMove = (gameId, originalPosition, newPosition, eTag) =>
+        this.playerMove("PlayerIMove", gameId, originalPosition, newPosition, eTag);
 
-    blackMove = (gameId, originalPosition, newPosition, eTag) =>
-        this.playerMove("BlackMove", gameId, originalPosition, newPosition, eTag);
+    playerIIMove = (gameId, originalPosition, newPosition, eTag) =>
+        this.playerMove("PlayerIIMove", gameId, originalPosition, newPosition, eTag);
 
-    blackJoinGame = gameId => this.gameSeatActivity("BlackJoinGame", gameId);
+    playerIIJoinGame = gameId => this.gameSeatActivity("PlayerIIJoinGame", gameId);
 
     ensureConnectionInitialized = () => {
         if (this.connection)
@@ -46,12 +46,12 @@ export class BoardService {
             .withUrl("/chesshub")
             .build();
 
-        // this.connection.on("BlackJoined", () => {
-        //     console.log("Black joined.")
+        // this.connection.on("PlayerIIJoined", () => {
+        //     console.log("PlayerII joined.")
         // });
 
-        // this.connection.on("WhiteJoined", () => {
-        //     console.log("White joined.")
+        // this.connection.on("PlayerIJoined", () => {
+        //     console.log("PlayerI joined.")
         // });
         return fromPromise(this.connection.start().catch(err => console.error(err.toString())));
     }

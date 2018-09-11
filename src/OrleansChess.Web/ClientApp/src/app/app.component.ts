@@ -1,14 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
-import { Color, WhiteBoardOrientation, BlackBoardOrientation, IBoardOrientation } from './models/BoardOrientation';
+import { Color, PlayerIBoardOrientation, PlayerIIBoardOrientation, IBoardOrientation } from './models/BoardOrientation';
 import { LocationService } from './location.service';
 
 class BoardOrientationFactory {
   static BuildOrientation(orientation: string): IBoardOrientation {
-    console.log(orientation);
-    if (orientation === 'black')
-      return new BlackBoardOrientation();
-    return new WhiteBoardOrientation();
+    if (orientation === 'playerI')
+      return new PlayerIBoardOrientation();
+    return new PlayerIIBoardOrientation();
   }
 }
 
@@ -26,9 +25,8 @@ export class AppComponent implements OnInit {
   }
 
   private setBoardOrientation() {
-    var orientationFromQs = this.locationService.getQueryStringVal('color');
+    var orientationFromQs = this.locationService.getQueryStringVal('orientation');
     this.boardOrientation = BoardOrientationFactory.BuildOrientation(orientationFromQs);
-    console.log(this.boardOrientation);
   }
 
   public boardOrientation: IBoardOrientation;

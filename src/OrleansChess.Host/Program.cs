@@ -41,12 +41,12 @@ namespace OrleansSiloHost
             // define the cluster configuration
             var builder = new SiloHostBuilder()
                 .UseLocalhostClustering()
-                .AddMemoryGrainStorage(GrainPersistence.SeatWhiteStateStore)
-                .AddMemoryGrainStorage(GrainPersistence.SeatBlackStateStore)
+                .AddMemoryGrainStorage(GrainPersistence.SeatIStateStore)
+                .AddMemoryGrainStorage(GrainPersistence.SeatIStateStore)
                 .AddMemoryGrainStorage(GrainPersistence.BoardStateStore)
                 .AddMemoryGrainStorage(GrainPersistence.GameStateStore)
-                .AddSimpleMessageStreamProvider(GrainPersistence.SeatWhiteStateStore)
-                .AddSimpleMessageStreamProvider(GrainPersistence.SeatBlackStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.SeatIStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.SeatIStateStore)
                 .AddSimpleMessageStreamProvider(GrainPersistence.BoardStateStore)
                 .AddSimpleMessageStreamProvider(GrainPersistence.GameStateStore)
                 .Configure<ClusterOptions>(options =>

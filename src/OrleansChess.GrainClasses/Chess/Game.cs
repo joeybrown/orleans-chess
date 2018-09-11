@@ -39,11 +39,12 @@ namespace OrleansChess.GrainClasses.Chess {
             return base.OnActivateAsync ();
         }
 
-        public Task<bool> IsValidMove(Move move) =>
-            Task.FromResult(ChessGame.IsValidMove (move));
+        public Task<bool> IsValidMove(IPlayerMove move) =>
+            Task.FromResult(ChessGame.IsValidMove (move.ToEngineMove()));
 
-        public async Task<IBoardState> ApplyValidatedMove(Move move)
+        public async Task<IBoardState> ApplyValidatedMove(IPlayerMove playerMove)
         {
+            var move = playerMove.ToEngineMove();
             ChessGame.ApplyMove(move, true);
             State.Moves.Add(move);
             State.ETag = Guid.NewGuid().ToString();

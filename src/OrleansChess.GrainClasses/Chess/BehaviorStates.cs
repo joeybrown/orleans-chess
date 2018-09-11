@@ -1,7 +1,7 @@
 namespace OrleansChess.GrainClasses.Chess {
     public enum TurnBehaviorStateOption {
-        Black,
-        White
+        PlayerI,
+        PlayerII
     }
 
     public enum SeatBehaviorStateOption {

@@ -5,29 +5,29 @@ namespace OrleansChess.Common.Events {
         Guid PlayerId { get; }
     }
 
-    public class BlackJoinedGame : IPlayerSeatEvent {
-        public BlackJoinedGame (Guid playerId) {
+    public class PlayerTookSeatII : IPlayerSeatEvent {
+        public PlayerTookSeatII (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class WhiteJoinedGame: IPlayerSeatEvent {
-        public WhiteJoinedGame (Guid playerId) {
+    public class PlayerTookSeatI: IPlayerSeatEvent {
+        public PlayerTookSeatI (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class WhiteLeftGame : IPlayerSeatEvent {
-        public WhiteLeftGame (Guid playerId) {
+    public class PlayerLeftSeatI : IPlayerSeatEvent {
+        public PlayerLeftSeatI (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
     }
 
-    public class BlackLeftGame : IPlayerSeatEvent {
-        public BlackLeftGame (Guid playerId) {
+    public class PlayerLeftSeatII : IPlayerSeatEvent {
+        public PlayerLeftSeatII (Guid playerId) {
             PlayerId = playerId;
         }
         public Guid PlayerId { get; }
