@@ -5,7 +5,6 @@ import { AppComponent } from './app.component';
 import { BoardComponent } from "./board.component";
 import { SourcesComponent } from "./sources.component";
 import { AppHttpModule } from "./http/app-http.module";
-import { BoardService } from "./board.service";
 
 
 @NgModule({
