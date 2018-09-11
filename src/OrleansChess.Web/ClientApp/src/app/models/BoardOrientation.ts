@@ -1,4 +1,9 @@
-export type Color = 'white' | 'black';
+export class Color {
+    constructor(friendlyName: string) {
+        this.friendlyName = friendlyName;
+    }
+    friendlyName: string;
+}
 
 export interface IBoardOrientation {
     color: Color;
@@ -6,14 +11,14 @@ export interface IBoardOrientation {
     shouldFlipBoard: boolean;
 }
 
-export class BlackBoardOrientation implements IBoardOrientation {
-    color: Color = 'black';
-    opposite: () => IBoardOrientation = () => new WhiteBoardOrientation();
+export class PlayerIIBoardOrientation implements IBoardOrientation {
+    color: Color = new Color("black"); //todo: pass in
+    opposite: () => IBoardOrientation = () => new PlayerIBoardOrientation();
     shouldFlipBoard: boolean = false;
 }
 
-export class WhiteBoardOrientation implements IBoardOrientation {
-    color: Color = 'white';
-    opposite: () => IBoardOrientation = () => new BlackBoardOrientation();
+export class PlayerIBoardOrientation implements IBoardOrientation {
+    color: Color = new Color("white"); //todo: pass in
+    opposite: () => IBoardOrientation = () => new PlayerIIBoardOrientation();
     shouldFlipBoard: boolean = true;
 }

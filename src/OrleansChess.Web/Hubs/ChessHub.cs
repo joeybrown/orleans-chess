@@ -27,7 +27,7 @@ public class ChessHub : Hub
         return new Success<IBoardState>(boardState);
     }
 
-    public async Task<ISuccessOrErrors<BoardState>> WhiteJoinGame(Guid gameId){
+    public async Task<ISuccessOrErrors<BoardState>> PlayerIJoinGame(Guid gameId){
         var identity = (ClaimsIdentity) Context.User.Identity;
         var playerId = Guid.Parse (identity.FindFirst("userId").Value);
         var seat = _orleansClient.GetGrain<ISeatI>(gameId);
@@ -38,13 +38,13 @@ public class ChessHub : Hub
         return result;
     }
 
-    public async Task<ISuccessOrErrors<PlayerIMoved>> WhiteMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+    public async Task<ISuccessOrErrors<PlayerIMoved>> PlayerIMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
         var board = _orleansClient.GetGrain<IBoard>(gameId);
         var result = await board.PlayerIMove(originalPosition, newPosition, eTag);
         return result;
     }
 
-    public async Task<ISuccessOrErrors<BoardState>> BlackJoinGame(Guid gameId){
+    public async Task<ISuccessOrErrors<BoardState>> PlayerIIJoinGame(Guid gameId){
         var playerId = Guid.NewGuid(); // todo: user should have guid
         var seat = _orleansClient.GetGrain<ISeatII>(gameId);
         var result = await seat.JoinGame(playerId);
@@ -54,7 +54,7 @@ public class ChessHub : Hub
         return result;
     }
 
-    public async Task<ISuccessOrErrors<PlayerIIMoved>> BlackMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
+    public async Task<ISuccessOrErrors<PlayerIIMoved>> PlayerIIMove (Guid gameId, string originalPosition, string newPosition, string eTag) {
         var board = _orleansClient.GetGrain<IBoard>(gameId);
         var result = await board.PlayerIIMove(originalPosition, newPosition, eTag);
         return result;

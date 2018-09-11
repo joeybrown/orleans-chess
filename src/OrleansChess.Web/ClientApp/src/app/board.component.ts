@@ -11,7 +11,7 @@ import { curry } from 'lodash';
 import { Observable } from 'rxjs/Observable';
 import { BoardState } from './models/BoardState';
 import { SuccessOrErrors } from './models/SuccessOrErrors';
-import { IBoardOrientation, BlackBoardOrientation, WhiteBoardOrientation } from './models/BoardOrientation';
+import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from './models/BoardOrientation';
 
 declare var ChessBoard;
 
@@ -58,22 +58,22 @@ interface ISeatBehavior {
     shouldFlipOrientation: boolean;
 }
 
-class SeatWhiteBehavior implements ISeatBehavior {
+class SeatPlayerIBehavior implements ISeatBehavior {
     joinGame(boardService: BoardService, gameId: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.whiteJoinGame(gameId)
+        return boardService.playerIJoinGame(gameId)
     }
     movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string, eTag: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.whiteMove(gameId, originalPosition, newPosition, eTag)
+        return boardService.playerIMove(gameId, originalPosition, newPosition, eTag)
     }
     shouldFlipOrientation = true;
 }
 
-class SeatBlackBehavior implements ISeatBehavior {
+class SeatPlayerIIBehavior implements ISeatBehavior {
     joinGame(boardService: BoardService, gameId: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.blackJoinGame(gameId)
+        return boardService.playerIIJoinGame(gameId)
     }
     movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string, eTag: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.blackMove(gameId, originalPosition, newPosition, eTag)
+        return boardService.playerIIMove(gameId, originalPosition, newPosition, eTag)
     }
     shouldFlipOrientation = false;
 }
@@ -81,10 +81,10 @@ class SeatBlackBehavior implements ISeatBehavior {
 class SeatBehaviorFactory {
     static buildSeatBehavior(orientation: IBoardOrientation) {
         switch (typeof(orientation)) {
-            case (typeof(BlackBoardOrientation)):
-                return new SeatBlackBehavior();
-            case (typeof(WhiteBoardOrientation)):
-                return new SeatWhiteBehavior();
+            case (typeof(PlayerIIBoardOrientation)):
+                return new SeatPlayerIIBehavior();
+            case (typeof(PlayerIBoardOrientation)):
+                return new SeatPlayerIBehavior();
             default:
                 throw('Unknown orientation');
         }
@@ -189,7 +189,7 @@ export class BoardComponent implements OnInit {
         //     boardConfig.start = fen;
         //     this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
         //     this.board.start();
-        //     if (this.orientation === 'white') {
+        //     if (this.orientation === 'playerI') {
         //         this.board.flip();
         //     }
         // });
