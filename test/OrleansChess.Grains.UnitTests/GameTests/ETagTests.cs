@@ -38,7 +38,7 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
             IBoardState boardState = new OrleansChess.Common.BoardState(fen, originalPosition, newPosition, resultETag);
             
             game.Setup (x => x.ApplyValidatedMove(It.IsAny<Move>())).Returns(Task.FromResult(boardState));
-            var result = await board.WhiteMove("A2", "A4", gameId.ToString());
+            var result = await board.PlayerIMove("A2", "A4", gameId.ToString());
             
             result.WasSuccessful.Should().BeTrue();
             result.Data.ETag.Should().Be(resultETag);
@@ -69,8 +69,8 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
                     .Returns(Task.FromResult(boardStateAfterWhiteMove))
                     .Returns(Task.FromResult(boardStateAfterBlackMove));
 
-            var whiteResult = await board.WhiteMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
-            var result = await board.BlackMove(blackOriginalPosition, blackNewPosition, whiteResult.Data.ETag);
+            var whiteResult = await board.PlayerIMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
+            var result = await board.PlayerIIMove(blackOriginalPosition, blackNewPosition, whiteResult.Data.ETag);
 
             result.WasSuccessful.Should().BeTrue();
             result.Data.ETag.Should().Be(blackMoveResultETag);
@@ -102,9 +102,9 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
                     .Returns(Task.FromResult(boardStateAfterWhiteMove))
                     .Returns(Task.FromResult(boardStateAfterBlackMove));
 
-            await board.WhiteMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
+            await board.PlayerIMove(whiteOriginalPosition, whiteNewPosition, gameId.ToString());
             var wrongETag = Guid.NewGuid().ToString();
-            var result = await board.BlackMove(blackOriginalPosition, blackNewPosition, wrongETag);
+            var result = await board.PlayerIIMove(blackOriginalPosition, blackNewPosition, wrongETag);
 
             result.WasSuccessful.Should().BeFalse();
         }

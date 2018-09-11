@@ -4,7 +4,7 @@ using OrleansChess.Common.Events;
 
 namespace OrleansChess.GrainInterfaces.Chess {
     public interface IBoard : Orleans.IGrainWithGuidKey {
-        Task<ISuccessOrErrors<WhiteMoved>> WhiteMove (string originalPosition, string newPosition, string eTag);
-        Task<ISuccessOrErrors<BlackMoved>> BlackMove (string originalPosition, string newPosition, string eTag);
+        Task<ISuccessOrErrors<PlayerIMoved>> PlayerIMove (string originalPosition, string newPosition, string eTag);
+        Task<ISuccessOrErrors<PlayerIIMoved>> PlayerIIMove (string originalPosition, string newPosition, string eTag);
     }
 }

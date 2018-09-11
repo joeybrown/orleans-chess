@@ -25,7 +25,7 @@ namespace OrleansChess.Grains.Tests.GameTests {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
 
-            var whiteSeat = sut.CreateGrain<SeatWhite> (gameId);
+            var whiteSeat = sut.CreateGrain<GrainClasses.Chess.SeatI> (gameId);
             var playerId = Guid.NewGuid();
             var result = await whiteSeat.JoinGame(playerId);
             result.WasSuccessful.Should().BeTrue();
@@ -36,7 +36,7 @@ namespace OrleansChess.Grains.Tests.GameTests {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
             
-            var blackSeat = Silo.CreateGrain<SeatBlack> (gameId);
+            var blackSeat = Silo.CreateGrain<SeatII> (gameId);
             var playerId = Guid.NewGuid();
             var result = await blackSeat.JoinGame(playerId);
             result.WasSuccessful.Should().BeTrue();

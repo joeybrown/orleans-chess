@@ -11,10 +11,10 @@ namespace OrleansChess.Grains.UnitTests.Extensions {
             var whitePlayerId = Guid.NewGuid();
             var blackPlayerId = Guid.NewGuid();            
             
-            var whiteSeat = silo.CreateGrain<SeatWhite>(id: guid);
+            var whiteSeat = silo.CreateGrain<GrainClasses.Chess.SeatI>(id: guid);
             await whiteSeat.JoinGame(whitePlayerId);
 
-            var blackSeat = silo.CreateGrain<SeatBlack>(id: guid);
+            var blackSeat = silo.CreateGrain<SeatII>(id: guid);
             await blackSeat.JoinGame(blackPlayerId);
         }
     }

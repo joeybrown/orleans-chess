@@ -26,10 +26,10 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
         public async Task OnGameCreationWhenWhiteJoins_Should_StreamEvent () {
             var gameId = Guid.NewGuid();
             var sut = BuildSut(gameId);
-            var stream = sut.AddStreamProbe<WhiteJoinedGame> (gameId, nameof (WhiteJoinedGame));
+            var stream = sut.AddStreamProbe<PlayerTookSeatI> (gameId, nameof (PlayerTookSeatI));
             
             var whiteId = Guid.NewGuid ();
-            var whiteSeat = sut.CreateGrain<SeatWhite> (id: gameId);
+            var whiteSeat = sut.CreateGrain<GrainClasses.Chess.SeatI> (id: gameId);
             await whiteSeat.JoinGame (whiteId);
 
             stream.Sends.Should ().Be (1);
@@ -40,10 +40,10 @@ namespace OrleansChess.Grains.UnitTests.GameTests {
         public async Task OnGameCreationWhenBlackJoins_Should_StreamEvent () {
             var gameId = Guid.NewGuid ();
             var sut = BuildSut(gameId);
-            var stream = Silo.AddStreamProbe<BlackJoinedGame> (gameId, nameof (BlackJoinedGame));
+            var stream = Silo.AddStreamProbe<PlayerTookSeatII> (gameId, nameof (PlayerTookSeatII));
             
             var blackId = Guid.NewGuid ();
-            var blackSeat = Silo.CreateGrain<SeatBlack> (id: gameId);
+            var blackSeat = Silo.CreateGrain<SeatII> (id: gameId);
             await blackSeat.JoinGame (blackId);
 
             stream.Sends.Should ().Be (1);

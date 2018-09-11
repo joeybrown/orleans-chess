@@ -2,16 +2,16 @@ using System.Threading.Tasks;
 using OrleansChess.Common;
 
 namespace OrleansChess.Common.Events {
-    public class BlackMoved : IBoardState {
+    public class PlayerIIMoved : IBoardState {
 
-        public BlackMoved(IBoardState boardState) {
+        public PlayerIIMoved(IBoardState boardState) {
             Fen = boardState.Fen;
             OriginalPosition = boardState.OriginalPosition;
             NewPosition = boardState.NewPosition;
             ETag = boardState.ETag;
         }
 
-        public BlackMoved (string fen, string originalPosition, string newPosition, string eTag) {
+        public PlayerIIMoved (string fen, string originalPosition, string newPosition, string eTag) {
             Fen = fen;
             OriginalPosition = originalPosition;
             NewPosition = newPosition;
@@ -24,15 +24,15 @@ namespace OrleansChess.Common.Events {
         public string ETag { get; }
     }
 
-    public class WhiteMoved : IBoardState {
-        public WhiteMoved(IBoardState boardState) {
+    public class PlayerIMoved : IBoardState {
+        public PlayerIMoved(IBoardState boardState) {
             Fen = boardState.Fen;
             OriginalPosition = boardState.OriginalPosition;
             NewPosition = boardState.NewPosition;
             ETag = boardState.ETag;
         }
 
-        public WhiteMoved (string fen, string originalPosition, string newPosition, string eTag) {
+        public PlayerIMoved (string fen, string originalPosition, string newPosition, string eTag) {
             Fen = fen;
             OriginalPosition = originalPosition;
             NewPosition = newPosition;
