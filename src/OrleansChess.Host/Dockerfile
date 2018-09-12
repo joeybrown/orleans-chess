@@ -5,7 +5,9 @@ WORKDIR /app
 FROM microsoft/dotnet:2.1-sdk AS build
 WORKDIR /src
 COPY ["src/OrleansChess.Host/OrleansChess.Host.csproj", "src/OrleansChess.Host/"]
-# COPY the dependencies
+COPY ["src/OrleansChess.GrainInterfaces/OrleansChess.GrainInterfaces.csproj", "src/OrleansChess.GrainInterfaces/"]
+COPY ["src/OrleansChess.GrainClasses/OrleansChess.GrainClasses.csproj", "src/OrleansChess.GrainClasses/"]
+COPY ["src/OrleansChess.Common/OrleansChess.Common.csproj", "src/OrleansChess.Common/"]
 RUN dotnet restore "src/OrleansChess.Host/OrleansChess.Host.csproj" -s https://api.nuget.org/v3/index.json
 COPY . .
 WORKDIR "/src/src/OrleansChess.Host"
