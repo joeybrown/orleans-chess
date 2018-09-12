@@ -1,0 +1,1 @@
+docker build -t orleanschess.host:dev -f ./src/OrleansChess.Host/Dockerfile .
