@@ -1,0 +1,4 @@
+{
+    "source": "./assets",
+    "destination": "../OrleansChess.Web/ClientApp/src/assets/images/chesspieces"
+}
