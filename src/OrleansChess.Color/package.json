@@ -1,0 +1,17 @@
+{
+  "name": "orleanschess.color",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "dependencies": {
+    "ts-node": "^7.0.1"
+  },
+  "devDependencies": {
+    "@types/node": "^10.10.1",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.0.3"
+  },
+  "scripts": {
+    "main": "ts-node index.ts"
+  },
+  "license": "ISC"
+}
