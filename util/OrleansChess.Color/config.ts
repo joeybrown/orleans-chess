@@ -1,6 +1,6 @@
 export class Config {
     static source = "./assets"
-    static destination = "../OrleansChess.Web/ClientApp/src/assets/images/chesspieces"
+    static destination = "../../src/OrleansChess.Web/ClientApp/src/assets/images/chesspieces"
 }
 
 interface IBrightness {
