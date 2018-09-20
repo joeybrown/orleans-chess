@@ -12,3 +12,21 @@ export async function ensureDirectoryExists(directory: string) {
         await mkdir(directory);
     }
 }
+
+export function readdir(path: string): Promise<string[]>{
+    return new Promise(function (resolve, reject) {
+        fs.readdir(path, function (error, result) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(result);
+            }
+        });
+    });
+}
+
+export async function asyncForEach(array: any[], callback: (item: any, index?: number, original?: any[]) => any) {
+    for (let index = 0; index < array.length; index++) {
+      await callback(array[index], index, array)
+    }
+  }
