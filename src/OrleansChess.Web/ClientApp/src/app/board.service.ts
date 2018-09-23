@@ -1,11 +1,9 @@
 import { Injectable } from '@angular/core';
 import { AppHttpService } from "./http/app-http.service";
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/observable/of';
 import { of } from 'rxjs/observable/of';
 import { fromPromise } from 'rxjs/observable/fromPromise';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { Subject } from "rxjs/Subject";
+import { catchError, switchMap } from 'rxjs/operators';
 import { HubConnection } from "@aspnet/signalr";
 import * as signalR from "@aspnet/signalr";
 import { BoardState } from "./models/BoardState";
@@ -56,8 +54,13 @@ export class BoardService {
         return fromPromise(this.connection.start().catch(err => console.error(err.toString())));
     }
 
-    getBoardState = gameId =>
+    getBoardState: (gameId) => Observable<SuccessOrErrors<BoardState>> = gameId =>
         this.ensureConnectionInitialized()
-            .pipe(switchMap(x=>fromPromise(this.connection.invoke("GetBoardState", gameId))))
-            .pipe(catchError(error => of(`Error: ${error}`)));
+            .pipe(switchMap(x => fromPromise(this.connection.invoke("GetBoardState", gameId) as Promise<SuccessOrErrors<BoardState>>)))
+            .pipe(catchError(error => {
+                var result = new SuccessOrErrors<BoardState>();
+                result.wasSuccessful = false;
+                result.errors = [error];
+                return of(result);
+            }));
 }
