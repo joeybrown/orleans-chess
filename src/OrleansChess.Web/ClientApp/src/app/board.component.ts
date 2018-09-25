@@ -150,7 +150,7 @@ export class BoardComponent implements OnInit {
     private pieceTheme = (piece: string) => {
         var isPlayerIPiece = piece.search(/w/) !== -1;
         var justPieceNoColor = piece[1];
-        var color = isPlayerIPiece ? 'yellow' : 'blue';
+        var color = isPlayerIPiece ? 'yellow' : 'lightblue';
         return `assets/images/chesspieces/${color}/${justPieceNoColor}.svg`;
     }
 
