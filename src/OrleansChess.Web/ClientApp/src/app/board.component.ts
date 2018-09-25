@@ -147,12 +147,19 @@ export class BoardComponent implements OnInit {
         //     () => this.isValidating.next(null));
     };
 
+    private pieceTheme = (piece: string) => {
+        var isPlayerIPiece = piece.search(/w/) !== -1;
+        var justPieceNoColor = piece[1];
+        var color = isPlayerIPiece ? 'yellow' : 'blue';
+        return `assets/images/chesspieces/${color}/${justPieceNoColor}.svg`;
+    }
+
     private boardConfig = {
         draggable: true,
         onDrop: this.onDrop,
         onDragStart: curry(BoardComponentHelpers.onDragStart)(this.isValidating.getValue()),
         start: null,
-        pieceTheme: 'chessboardjs-0.3.0/img/chesspieces/wikipedia/{piece}.png'
+        pieceTheme: this.pieceTheme
     }
 
     ngOnInit(): void {
