@@ -6,6 +6,7 @@ import { BoardComponent } from "./board/board.component";
 import { SourcesComponent } from "./shoutout/sources.component";
 import { AppHttpModule } from "./http/app-http.module";
 import { ToastrModule } from 'ng6-toastr-notifications';
+import { AppAuthModule } from './auth/app-auth.module';
 
 @NgModule({
   declarations: [
@@ -16,9 +17,12 @@ import { ToastrModule } from 'ng6-toastr-notifications';
   imports: [
     BrowserModule,
     AppHttpModule,
+    AppAuthModule,
     BrowserAnimationsModule,
     ToastrModule.forRoot()
   ],
-  bootstrap: [AppComponent]
+  bootstrap: [
+    AppComponent
+  ]
 })
 export class AppModule { }
