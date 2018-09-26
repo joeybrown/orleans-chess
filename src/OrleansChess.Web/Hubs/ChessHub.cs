@@ -1,12 +1,15 @@
 using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Orleans;
 using OrleansChess.Common;
 using OrleansChess.Common.Events;
 using OrleansChess.GrainInterfaces.Chess;
 
+[Authorize]
 public class ChessHub : Hub 
 {
     private readonly IClusterClient _orleansClient;
@@ -28,10 +31,9 @@ public class ChessHub : Hub
     }
 
     public async Task<ISuccessOrErrors<BoardState>> PlayerIJoinGame(Guid gameId){
-        var identity = (ClaimsIdentity) Context.User.Identity;
-        var playerId = Guid.Parse (identity.FindFirst("userId").Value);
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
         var seat = _orleansClient.GetGrain<ISeatI>(gameId);
-        var result = await seat.JoinGame(playerId);
+        var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
         }
@@ -45,9 +47,9 @@ public class ChessHub : Hub
     }
 
     public async Task<ISuccessOrErrors<BoardState>> PlayerIIJoinGame(Guid gameId){
-        var playerId = Guid.NewGuid(); // todo: user should have guid
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
         var seat = _orleansClient.GetGrain<ISeatII>(gameId);
-        var result = await seat.JoinGame(playerId);
+        var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
         }

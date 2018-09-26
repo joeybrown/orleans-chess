@@ -6,12 +6,13 @@ import 'rxjs/add/operator/pairwise';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/skip';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
-import { IMove } from './utilities/IMove';
+import { IMove } from '../utilities/IMove';
 import { curry } from 'lodash';
 import { Observable } from 'rxjs/Observable';
-import { BoardState } from './models/BoardState';
-import { SuccessOrErrors } from './models/SuccessOrErrors';
-import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from './models/BoardOrientation';
+import { BoardState } from '../models/BoardState';
+import { SuccessOrErrors } from '../models/SuccessOrErrors';
+import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from '../models/BoardOrientation';
+import { ToastrManager } from 'ng6-toastr-notifications';
 
 declare var ChessBoard;
 
@@ -105,7 +106,7 @@ export class BoardComponent implements OnInit {
     private board: any;
     private seatBehavior: ISeatBehavior;
 
-    constructor(private readonly boardService: BoardService) {
+    constructor(private readonly boardService: BoardService, private toastr: ToastrManager) {
     }
 
     private isValidating = new BehaviorSubject<IMove>(null);
@@ -177,6 +178,10 @@ export class BoardComponent implements OnInit {
                 if (this.orientation.shouldFlipBoard) {
                     this.board.flip();
                 }
+            } else {
+                x.errors.forEach(x=>{
+                    this.toastr.errorToastr(x);
+                })
             }
         });
         // this.seatBehavior.joinGame(this.boardService, this.boardId).subscribe(x => {

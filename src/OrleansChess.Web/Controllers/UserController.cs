@@ -41,5 +41,11 @@ namespace OrleansChess.Web.Controllers {
             var claims = User.Claims;
             return Ok();
         }
+
+        [HttpGet ("[action]")]
+        [Authorize]
+        public async Task<IActionResult> IsAuthorized() {
+            return Ok(true);
+        }
     }
 }
