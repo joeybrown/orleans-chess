@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Orleans;
 
 namespace OrleansChess.Web.Controllers {
-    [Route ("api/[controller]")]
+    [Route ("api/[controller]/[action]")]
     [ApiController]
     public class UserController : Controller {
         private readonly IClusterClient _client;
@@ -19,12 +19,16 @@ namespace OrleansChess.Web.Controllers {
             _client = client;
         }
 
-        [HttpGet ("[action]/{userName}")]
-        public async Task<IActionResult> Login (string userName) {
+        [HttpGet]
+        public async Task<IActionResult> EnsureAuthenticated () {
+            var userIsAuthenticated = User.Claims.Select (x => x.Type).Contains ("userId");
+
+            if (userIsAuthenticated)
+                return Ok ();
+
             var userId = Guid.NewGuid ().ToString ();
             var claims = new Claim[] {
-                new Claim ("userId", userId),
-                new Claim ("userName", userName)
+                new Claim ("userId", userId)
             };
             var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties ();
@@ -32,20 +36,36 @@ namespace OrleansChess.Web.Controllers {
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal (claimsIdentity),
                 authProperties);
-            return Ok();
+            return Ok ();
+        }
+
+        [HttpGet ("{userName}")]
+        public async Task<IActionResult> Login (string userName) {
+            var userId = Guid.NewGuid ().ToString ();
+            var claims = new Claim[] {
+                new Claim ("userId", userId),
+                new Claim ("userName", userName),
+            };
+            var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties ();
+            await HttpContext.SignInAsync (
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal (claimsIdentity),
+                authProperties);
+            return Ok ();
         }
 
         [HttpGet ("[action]")]
         [Authorize]
-        public async Task<IActionResult> Test() {
+        public async Task<IActionResult> Test () {
             var claims = User.Claims;
-            return Ok();
+            return Ok ();
         }
 
         [HttpGet ("[action]")]
         [Authorize]
-        public async Task<IActionResult> IsAuthorized() {
-            return Ok(true);
+        public async Task<IActionResult> IsAuthorized () {
+            return Ok (true);
         }
     }
 }
