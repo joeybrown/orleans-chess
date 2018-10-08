@@ -20,52 +20,25 @@ namespace OrleansChess.Web.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> EnsureAuthenticated () {
-            var userIsAuthenticated = User.Claims.Select (x => x.Type).Contains ("userId");
+        public async Task<IActionResult> EnsureUserHasPlayerId () {
+            var userIsAuthenticated = User.Claims.Select (x => x.Type).Contains ("playerId");
 
             if (userIsAuthenticated)
                 return Ok ();
 
-            var userId = Guid.NewGuid ().ToString ();
+            var playerId = Guid.NewGuid ().ToString ();
             var claims = new Claim[] {
-                new Claim ("userId", userId)
+                new Claim ("playerId", playerId)
             };
             var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties ();
+            var authProperties = new AuthenticationProperties () {
+                IsPersistent = true
+            };
             await HttpContext.SignInAsync (
                 CookieAuthenticationDefaults.AuthenticationScheme,
                 new ClaimsPrincipal (claimsIdentity),
                 authProperties);
             return Ok ();
-        }
-
-        [HttpGet ("{userName}")]
-        public async Task<IActionResult> Login (string userName) {
-            var userId = Guid.NewGuid ().ToString ();
-            var claims = new Claim[] {
-                new Claim ("userId", userId),
-                new Claim ("userName", userName),
-            };
-            var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var authProperties = new AuthenticationProperties ();
-            await HttpContext.SignInAsync (
-                CookieAuthenticationDefaults.AuthenticationScheme,
-                new ClaimsPrincipal (claimsIdentity),
-                authProperties);
-            return Ok ();
-        }
-
-        [HttpGet ("[action]")]
-        [Authorize]
-        public async Task<IActionResult> Test () {
-            var claims = User.Claims;
-            return Ok ();
-        }
-
-        [HttpGet ("[action]")]
-        [Authorize]
-        public async Task<IActionResult> IsAuthorized () {
-            return Ok (true);
         }
     }
 }

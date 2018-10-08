@@ -31,7 +31,7 @@ public class ChessHub : Hub
     }
 
     public async Task<ISuccessOrErrors<BoardState>> PlayerIJoinGame(Guid gameId){
-        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("playerId")).Value;
         var seat = _orleansClient.GetGrain<ISeatI>(gameId);
         var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {
@@ -47,7 +47,7 @@ public class ChessHub : Hub
     }
 
     public async Task<ISuccessOrErrors<BoardState>> PlayerIIJoinGame(Guid gameId){
-        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("playerId")).Value;
         var seat = _orleansClient.GetGrain<ISeatII>(gameId);
         var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {

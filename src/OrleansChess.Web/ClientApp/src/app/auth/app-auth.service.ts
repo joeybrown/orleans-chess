@@ -7,7 +7,7 @@ export class AppAuthService {
         console.log('AppAuthService Instantiated');
     }
 
-    ensureUserIsAuthenticated = () => {
-        return this.appHttpService.get('api/user/ensureAuthenticated');
+    ensureUserHasPlayerId = () => {
+        return this.appHttpService.get('api/user/ensureUserHasPlayerId');
     }
 }

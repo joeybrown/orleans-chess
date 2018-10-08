@@ -13,6 +13,8 @@ import { BoardState } from '../models/BoardState';
 import { SuccessOrErrors } from '../models/SuccessOrErrors';
 import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from '../models/BoardOrientation';
 import { ToastrManager } from 'ng6-toastr-notifications';
+import { AppAuthService } from '../auth/app-auth.service';
+import { switchMap } from 'rxjs/operators';
 
 declare var ChessBoard;
 
@@ -20,10 +22,10 @@ export class BoardComponentHelpers {
     static movedPiece = (source: string, target: string) => {
         if (source === target)
             return false;
-    
+
         if (target === 'offboard')
             return false;
-    
+
         return true;
     }
 
@@ -44,9 +46,9 @@ export class BoardComponentHelpers {
             squareEl.addClass(cssClass));
 
     static setNewActiveCssClass = (gameId: string, x: { current: IMove, previous: IMove }, cssClass: string) => {
-        if (x.previous) 
+        if (x.previous)
             BoardComponentHelpers.removeSquareClass(gameId, x.previous, cssClass);
-        if (x.current) 
+        if (x.current)
             BoardComponentHelpers.addSquareClass(gameId, x.current, cssClass);
     }
 
@@ -81,13 +83,13 @@ class SeatPlayerIIBehavior implements ISeatBehavior {
 
 class SeatBehaviorFactory {
     static buildSeatBehavior(orientation: IBoardOrientation) {
-        switch (typeof(orientation)) {
-            case (typeof(PlayerIIBoardOrientation)):
+        switch (typeof (orientation)) {
+            case (typeof (PlayerIIBoardOrientation)):
                 return new SeatPlayerIIBehavior();
-            case (typeof(PlayerIBoardOrientation)):
+            case (typeof (PlayerIBoardOrientation)):
                 return new SeatPlayerIBehavior();
             default:
-                throw('Unknown orientation');
+                throw ('Unknown orientation');
         }
     }
 }
@@ -106,7 +108,9 @@ export class BoardComponent implements OnInit {
     private board: any;
     private seatBehavior: ISeatBehavior;
 
-    constructor(private readonly boardService: BoardService, private toastr: ToastrManager) {
+    constructor(private readonly boardService: BoardService,
+        private readonly toastr: ToastrManager,
+        private readonly authService: AppAuthService) {
     }
 
     private isValidating = new BehaviorSubject<IMove>(null);
@@ -164,26 +168,27 @@ export class BoardComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        // this.seatBehavior = SeatBehaviorFactory.buildSeatBehavior(this.orientation);
-        // don't set seat based on orientation.
-
-
-        this.boardService.getBoardState(this.gameId).subscribe(x => {
-            if (x.wasSuccessful) {
-                const boardConfig = this.boardConfig;
-                boardConfig.start = x.data.fen;
-                this.board = ChessBoard(`gameId-${this.gameId}`, boardConfig);
-                this.board.start();
-
-                if (this.orientation.shouldFlipBoard) {
-                    this.board.flip();
-                }
-            } else {
-                x.errors.forEach(x=>{
-                    this.toastr.errorToastr(x);
-                })
+        const setBoardOrientation = (board: any, boardOrientation: IBoardOrientation) => {
+            if (this.orientation.shouldFlipBoard) {
+                this.board.flip();
             }
-        });
+        }
+
+        var getBoardState = this.authService.ensureUserHasPlayerId()
+            .pipe(switchMap((x => this.boardService.getBoardState(this.gameId))))
+            .subscribe(x => {
+                if (x.wasSuccessful) {
+                    const boardConfig = this.boardConfig;
+                    boardConfig.start = x.data.fen;
+                    this.board = ChessBoard(`gameId-${this.gameId}`, boardConfig);
+                    this.board.start();
+                    setBoardOrientation(this.board, this.orientation);
+                    return;
+                }
+                x.errors.forEach(x => {
+                    this.toastr.errorToastr(x);
+                });
+            });
         // this.seatBehavior.joinGame(this.boardService, this.boardId).subscribe(x => {
         //     if (x.wasSuccessful) {
         //         const boardConfig = this.boardConfig;
