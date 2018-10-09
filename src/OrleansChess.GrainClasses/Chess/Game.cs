@@ -21,7 +21,7 @@ namespace OrleansChess.GrainClasses.Chess {
     }
 
     [StorageProvider (ProviderName = GrainPersistence.GameStateStore)]
-    public partial class Game : Grain<GameState>, IGame {
+    public class Game : Grain<GameState>, IGame {
         // todo: keep track of game completion status
 
         public Task<IBoardState> GetBoardState () {

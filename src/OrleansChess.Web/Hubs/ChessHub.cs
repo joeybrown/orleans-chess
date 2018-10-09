@@ -10,7 +10,7 @@ using OrleansChess.Common.Events;
 using OrleansChess.GrainInterfaces.Chess;
 
 [Authorize]
-public class ChessHub : Hub 
+public class ChessHub : Hub, IChessHub
 {
     private readonly IClusterClient _orleansClient;
 
