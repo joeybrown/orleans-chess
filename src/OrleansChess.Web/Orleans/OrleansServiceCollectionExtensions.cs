@@ -66,6 +66,7 @@ namespace OrleansChess.Web.Orleans
                     options.ServiceId = "HelloWorldApp";
                 })
                 .ConfigureLogging(logging => logging.AddConsole())
+                .UseSignalR()
                 .Build;
             OnFailure onFailure = (attempt, totalAttempts) => Console.WriteLine($"Attempt {attempt} of {attemptsBeforeFailing} failed to initialize the Orleans client.");
             var client = await ExecuteFuncWithRetries(attemptsBeforeFailing, buildClient, onFailure);

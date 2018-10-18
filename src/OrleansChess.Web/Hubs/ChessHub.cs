@@ -19,8 +19,9 @@ public class ChessHub : Hub, IChessHub
         _orleansClient = orleansClient;
     }
 
-    public override async Task OnConnectedAsync()
+    public override Task OnConnectedAsync()
     {
+        return Task.CompletedTask;
     }
 
     public async Task<ISuccessOrErrors<IBoardState>> GetBoardState(string gameId) {

@@ -11,9 +11,9 @@
   <ItemGroup>
     <PackageReference Include="ChessDotNet" Version="0.9.6" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR" Version="1.0.3" />
-    <PackageReference Include="Microsoft.Orleans.Core" Version="2.0.3" />
-    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.0.3" />
-    <PackageReference Include="SignalR.Orleans" Version="1.0.5" />
+    <PackageReference Include="Microsoft.Orleans.Core" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="2.1.2" />
+    <PackageReference Include="SignalR.Orleans" Version="1.0.6" />
   </ItemGroup>
 
 </Project>
