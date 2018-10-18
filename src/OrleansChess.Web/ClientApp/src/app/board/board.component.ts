@@ -174,7 +174,7 @@ export class BoardComponent implements OnInit {
             }
         }
 
-        var getBoardState = this.authService.ensureUserHasPlayerId()
+        var getBoardState = this.authService.ensureUserIsAuthenticated()
             .pipe(switchMap((x => this.boardService.getBoardState(this.gameId))))
             .subscribe(x => {
                 if (x.wasSuccessful) {
