@@ -20,15 +20,31 @@ namespace OrleansChess.Web.Controllers {
         }
 
         [HttpGet]
-        public async Task<IActionResult> EnsureUserHasPlayerId () {
-            var userIsAuthenticated = User.Claims.Select (x => x.Type).Contains ("playerId");
+        public async Task<IActionResult> EnsureAuthenticated () {
+            var userIsAuthenticated = User.Claims.Select (x => x.Type).Contains ("userId");
 
             if (userIsAuthenticated)
                 return Ok ();
 
-            var playerId = Guid.NewGuid ().ToString ();
+            var userId = Guid.NewGuid ().ToString ();
             var claims = new Claim[] {
-                new Claim ("playerId", playerId)
+                new Claim ("userId", userId)
+            };
+            var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var authProperties = new AuthenticationProperties ();
+            await HttpContext.SignInAsync (
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                new ClaimsPrincipal (claimsIdentity),
+                authProperties);
+            return Ok ();
+        }
+
+        [HttpGet ("{userName}")]
+        public async Task<IActionResult> Login (string userName) {
+            var userId = Guid.NewGuid ().ToString ();
+            var claims = new Claim[] {
+                new Claim ("userId", userId),
+                new Claim ("userName", userName),
             };
             var claimsIdentity = new ClaimsIdentity (claims, CookieAuthenticationDefaults.AuthenticationScheme);
             var authProperties = new AuthenticationProperties () {
@@ -39,6 +55,19 @@ namespace OrleansChess.Web.Controllers {
                 new ClaimsPrincipal (claimsIdentity),
                 authProperties);
             return Ok ();
+        }
+
+        [HttpGet ("[action]")]
+        [Authorize]
+        public async Task<IActionResult> Test () {
+            var claims = User.Claims;
+            return Ok ();
+        }
+
+        [HttpGet ("[action]")]
+        [Authorize]
+        public async Task<IActionResult> IsAuthorized () {
+            return Ok (true);
         }
     }
 }

@@ -4,10 +4,9 @@ import { Injectable } from "@angular/core";
 @Injectable()
 export class AppAuthService {
     constructor(private appHttpService: AppHttpService) {
-        console.log('AppAuthService Instantiated');
     }
 
-    ensureUserHasPlayerId = () => {
-        return this.appHttpService.get('api/user/ensureUserHasPlayerId');
+    ensureUserIsAuthenticated = () => {
+        return this.appHttpService.get('api/user/ensureAuthenticated');
     }
 }
