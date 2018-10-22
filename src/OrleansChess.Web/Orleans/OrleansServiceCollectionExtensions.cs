@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Runtime;
+using OrleansChess.GrainClasses.Chess;
 
 namespace OrleansChess.Web.Orleans
 {
@@ -58,7 +59,7 @@ namespace OrleansChess.Web.Orleans
 
         private static async Task<IClusterClient> StartClientWithRetries(int attemptsBeforeFailing = 5)
         {
-            Func<IClusterClient> buildClient = () => new ClientBuilder()
+            Func<IClusterClient> buildClient = new ClientBuilder()
                 .UseLocalhostClustering()
                 .Configure<ClusterOptions>(options =>
                 {
@@ -66,7 +67,9 @@ namespace OrleansChess.Web.Orleans
                     options.ServiceId = "HelloWorldApp";
                 })
                 .ConfigureLogging(logging => logging.AddConsole())
-                .Build();
+                .UseSignalR()
+                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(Game).Assembly).WithReferences())
+                .Build;
             OnFailure onFailure = (attempt, totalAttempts) => Console.WriteLine($"Attempt {attempt} of {attemptsBeforeFailing} failed to initialize the Orleans client.");
             var client = await ExecuteFuncWithRetries(attemptsBeforeFailing, buildClient, onFailure);
             await client.Connect();

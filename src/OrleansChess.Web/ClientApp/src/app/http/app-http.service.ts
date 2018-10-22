@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/operator/delay';
 
@@ -17,7 +16,7 @@ type httpOptions = {
 export class AppHttpService {
 
     constructor(private readonly httpClient: HttpClient) {
-        console.log('AppHttpService Instance');
+        console.log('AppHttpService Instantiated');
     }
 
     get = (url: string, options?: httpOptions) => {

@@ -12,8 +12,9 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="2.1.1" />
-    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.0.0" />
-    <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="2.0.3" />
+    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Orleans.OrleansRuntime" Version="2.1.2" />
+    <PackageReference Include="SignalR.Orleans" Version="1.0.6" />
   </ItemGroup>
 
 </Project>

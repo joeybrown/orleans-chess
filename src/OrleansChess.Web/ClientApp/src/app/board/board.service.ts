@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
-import { AppHttpService } from "./http/app-http.service";
+import { AppHttpService } from "../http/app-http.service";
 import { Observable } from 'rxjs/Observable';
 import { of } from 'rxjs/observable/of';
 import { fromPromise } from 'rxjs/observable/fromPromise';
 import { catchError, switchMap } from 'rxjs/operators';
 import { HubConnection } from "@aspnet/signalr";
 import * as signalR from "@aspnet/signalr";
-import { BoardState } from "./models/BoardState";
-import { SuccessOrErrors } from "./models/SuccessOrErrors";
+import { BoardState } from "../models/BoardState";
+import { SuccessOrErrors } from "../models/SuccessOrErrors";
 
 @Injectable()
 export class BoardService {
@@ -58,9 +58,10 @@ export class BoardService {
         this.ensureConnectionInitialized()
             .pipe(switchMap(x => fromPromise(this.connection.invoke("GetBoardState", gameId) as Promise<SuccessOrErrors<BoardState>>)))
             .pipe(catchError(error => {
+                console.log(error.message);
                 var result = new SuccessOrErrors<BoardState>();
                 result.wasSuccessful = false;
-                result.errors = [error];
+                result.errors = [error.message];
                 return of(result);
             }));
 }

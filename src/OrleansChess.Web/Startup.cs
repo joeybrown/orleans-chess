@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.SpaServices.AngularCli;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrleansChess.Web.Orleans;
+using Microsoft.AspNetCore.Authorization;
+using OrleansChess.Common;
 
 namespace OrleansChess.Web {
     public class Startup {
@@ -26,8 +28,8 @@ namespace OrleansChess.Web {
                 configuration.RootPath = "ClientApp/dist";
             });
 
-            services.AddSignalR ();
             services.AddOrleansClient ();
+            services.AddSignalR().AddOrleans();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

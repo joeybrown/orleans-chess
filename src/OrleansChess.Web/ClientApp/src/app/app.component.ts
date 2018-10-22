@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { HttpParams } from '@angular/common/http';
 import { Color, PlayerIBoardOrientation, PlayerIIBoardOrientation, IBoardOrientation } from './models/BoardOrientation';
-import { LocationService } from './location.service';
+import { LocationService } from './services/location.service';
 
 class BoardOrientationFactory {
   static BuildOrientation(orientation: string): IBoardOrientation {
