@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Runtime;
+using OrleansChess.GrainClasses.Chess;
 
 namespace OrleansChess.Web.Orleans
 {
@@ -67,6 +68,7 @@ namespace OrleansChess.Web.Orleans
                 })
                 .ConfigureLogging(logging => logging.AddConsole())
                 .UseSignalR()
+                .ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(Game).Assembly).WithReferences())
                 .Build;
             OnFailure onFailure = (attempt, totalAttempts) => Console.WriteLine($"Attempt {attempt} of {attemptsBeforeFailing} failed to initialize the Orleans client.");
             var client = await ExecuteFuncWithRetries(attemptsBeforeFailing, buildClient, onFailure);
