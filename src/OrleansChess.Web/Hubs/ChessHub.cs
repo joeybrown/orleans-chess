@@ -31,9 +31,9 @@ public class ChessHub : Hub, IChessHub
         return new Success<IBoardState>(boardState);
     }
 
-    public async Task<ISuccessOrErrors<BoardState>> PlayerIJoinGame(Guid gameId){
-        var playerId = Context.User.Claims.First(x=>x.Type.Equals("playerId")).Value;
-        var seat = _orleansClient.GetGrain<ISeatI>(gameId);
+    public async Task<ISuccessOrErrors<BoardState>> PlayerIJoinGame(string gameId){
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
+        var seat = _orleansClient.GetGrain<ISeatI>(Guid.Parse(gameId));
         var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
@@ -47,9 +47,9 @@ public class ChessHub : Hub, IChessHub
         return result;
     }
 
-    public async Task<ISuccessOrErrors<BoardState>> PlayerIIJoinGame(Guid gameId){
-        var playerId = Context.User.Claims.First(x=>x.Type.Equals("playerId")).Value;
-        var seat = _orleansClient.GetGrain<ISeatII>(gameId);
+    public async Task<ISuccessOrErrors<BoardState>> PlayerIIJoinGame(string gameId){
+        var playerId = Context.User.Claims.First(x=>x.Type.Equals("userId")).Value;
+        var seat = _orleansClient.GetGrain<ISeatII>(Guid.Parse(gameId));
         var result = await seat.JoinGame(Guid.Parse(playerId));
         if (result.WasSuccessful) {
             await Groups.AddToGroupAsync(Context.ConnectionId, gameId.ToString());
