@@ -12,8 +12,8 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 
 @Injectable()
 export class BoardService {
-    private connection: HubConnection;
-    private eTag = new BehaviorSubject(null);
+    private connection: HubConnection = null;
+    private eTag: BehaviorSubject<string> = new BehaviorSubject(null);
 
     constructor(private appHttpService: AppHttpService) {
     }

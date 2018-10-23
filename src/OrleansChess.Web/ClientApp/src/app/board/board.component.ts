@@ -181,6 +181,7 @@ export class BoardComponent implements OnInit {
             this.seatBehavior = new SeatPlayerIIBehavior();
 
         var boardStateSubscription = this.authService.ensureUserIsAuthenticated()
+            .pipe(switchMap(x=> this.boardService.ensureConnectionInitialized()))
             .pipe(switchMap(x => this.boardService.getBoardState(this.gameId)));
 
         boardStateSubscription
