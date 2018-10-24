@@ -26,7 +26,7 @@ namespace OrleansChess.Common {
     public interface IPlayerSeatStreamProvider: IStreamProvider {
     }
 
-    public class PlayerSeatStreamProvider : AbstractStreamProvider, IStreamProvider
+    public class PlayerSeatStreamProvider : AbstractStreamProvider, IPlayerSeatStreamProvider
     {
         public PlayerSeatStreamProvider(string providerName) : base(providerName)
         {

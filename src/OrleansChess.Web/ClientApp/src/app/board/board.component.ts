@@ -1,8 +1,6 @@
 import { Component, OnInit, Input } from '@angular/core';
 import * as $ from 'jquery';
 import { BoardService } from "./board.service";
-import 'rxjs/add/operator/map';
-import 'rxjs/add/operator/pairwise';
 import 'rxjs/add/operator/take';
 import 'rxjs/add/operator/skip';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
@@ -14,7 +12,7 @@ import { SuccessOrErrors } from '../models/SuccessOrErrors';
 import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from '../models/BoardOrientation';
 import { ToastrManager } from 'ng6-toastr-notifications';
 import { AppAuthService } from '../auth/app-auth.service';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, pairwise, map, tap } from 'rxjs/operators';
 
 declare var ChessBoard;
 
@@ -57,7 +55,7 @@ export class BoardComponentHelpers {
 
 interface ISeatBehavior {
     joinGame(boardService: BoardService, gameId: string): Observable<SuccessOrErrors<BoardState>>;
-    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string, eTag: string): Observable<SuccessOrErrors<BoardState>>;
+    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string): Observable<SuccessOrErrors<BoardState>>;
     shouldFlipOrientation: boolean;
 }
 
@@ -65,8 +63,8 @@ class SeatPlayerIBehavior implements ISeatBehavior {
     joinGame(boardService: BoardService, gameId: string): Observable<SuccessOrErrors<BoardState>> {
         return boardService.playerIJoinGame(gameId)
     }
-    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string, eTag: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.playerIMove(gameId, originalPosition, newPosition, eTag)
+    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string): Observable<SuccessOrErrors<BoardState>> {
+        return boardService.playerIMove(gameId, originalPosition, newPosition)
     }
     shouldFlipOrientation = true;
 }
@@ -75,8 +73,8 @@ class SeatPlayerIIBehavior implements ISeatBehavior {
     joinGame(boardService: BoardService, gameId: string): Observable<SuccessOrErrors<BoardState>> {
         return boardService.playerIIJoinGame(gameId)
     }
-    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string, eTag: string): Observable<SuccessOrErrors<BoardState>> {
-        return boardService.playerIIMove(gameId, originalPosition, newPosition, eTag)
+    movePiece(boardService: BoardService, gameId: string, originalPosition: string, newPosition: string): Observable<SuccessOrErrors<BoardState>> {
+        return boardService.playerIIMove(gameId, originalPosition, newPosition)
     }
     shouldFlipOrientation = false;
 }
@@ -91,6 +89,12 @@ class SeatBehaviorFactory {
             default:
                 throw ('Unknown orientation');
         }
+    }
+}
+
+const setBoardOrientation = (board: any, boardOrientation: IBoardOrientation) => {
+    if (this.orientation.shouldFlipBoard) {
+        this.board.flip();
     }
 }
 
@@ -122,34 +126,36 @@ export class BoardComponent implements OnInit {
     private setNewActiveCssClass = curry(BoardComponentHelpers.setNewActiveCssClass)(this.gameId);
 
     private onDrop = (source, target, piece, newPos, oldPos, orientation) => {
-        // const moveBack = (moveToUndo: IMove, fen: string) => {
-        //     this.board.position(fen);
-        //     this.addSquareClass(moveToUndo, 'invalidMove');
-        //     setTimeout(()=>this.removeSquareClass(moveToUndo, 'invalidMove'), 500);
-        // }
+        const moveBack = (moveToUndo: IMove, fen: string) => {
+            this.board.position(fen);
+            this.addSquareClass(moveToUndo, 'invalidMove');
+            setTimeout(()=>this.removeSquareClass(moveToUndo, 'invalidMove'), 500);
+        }
 
-        // if (!this.movedPiece(source, target))
-        //     return;
+        if (!this.movedPiece(source, target))
+            return;
 
-        // const oldFen = ChessBoard.objToFen(oldPos);
-        // const newFen = ChessBoard.objToFen(newPos);
+        const oldFen = ChessBoard.objToFen(oldPos);
+        const newFen = ChessBoard.objToFen(newPos);
 
-        // var move = { source: source, target: target };
-        // this.isValidating.next(move);
-        // this.boardService.tryMove(oldFen, newFen).subscribe(
-        //     canMove => {
-        //         if (!canMove.successful) {
-        //             moveBack(move, oldFen);
-        //             return;
-        //         }
-        //         this.mostRecentValidMove.next(move);
-        //         this.board.position(canMove.fen);
-        //     },
-        //     error => {
-        //         console.log(error)
-        //         moveBack(move, oldFen);
-        //     },
-        //     () => this.isValidating.next(null));
+        var move = { source: source, target: target };
+        this.isValidating.next(move);
+
+        this.seatBehavior.movePiece(this.boardService, this.gameId, oldFen, newFen).subscribe(
+            result => {
+                if (!result.wasSuccessful) {
+                    moveBack(move, oldFen);
+                    result.errors.forEach(x => {
+                        this.toastr.errorToastr(x);
+                    });
+                    return;
+                }
+                this.mostRecentValidMove.next(move);
+                this.board.position(result.data.fen);
+            },
+            error => {
+            },
+            () => this.isValidating.next(null));
     };
 
     private pieceTheme = (piece: string) => {
@@ -168,14 +174,17 @@ export class BoardComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        const setBoardOrientation = (board: any, boardOrientation: IBoardOrientation) => {
-            if (this.orientation.shouldFlipBoard) {
-                this.board.flip();
-            }
-        }
 
-        var getBoardState = this.authService.ensureUserIsAuthenticated()
-            .pipe(switchMap((x => this.boardService.getBoardState(this.gameId))))
+        if (this.orientation.shouldFlipBoard) 
+            this.seatBehavior = new SeatPlayerIBehavior();
+        else 
+            this.seatBehavior = new SeatPlayerIIBehavior();
+
+        var boardStateSubscription = this.authService.ensureUserIsAuthenticated()
+            .pipe(switchMap(x=> this.boardService.ensureConnectionInitialized()))
+            .pipe(switchMap(x => this.boardService.getBoardState(this.gameId)));
+
+        boardStateSubscription
             .subscribe(x => {
                 if (x.wasSuccessful) {
                     const boardConfig = this.boardConfig;
@@ -189,17 +198,20 @@ export class BoardComponent implements OnInit {
                     this.toastr.errorToastr(x);
                 });
             });
-        // this.seatBehavior.joinGame(this.boardService, this.boardId).subscribe(x => {
-        //     if (x.wasSuccessful) {
-        //         const boardConfig = this.boardConfig;
-        //         boardConfig.start = x.data.fen;
-        //         this.board = ChessBoard(`board-${this.boardId}`, boardConfig);
-        //         this.board.start();
-        //         if (this.seatBehavior.shouldFlipOrientation) {
-        //             this.board.flip();
-        //         }
-        //     }
-        // });
+
+        boardStateSubscription.subscribe(x=>{
+            if (x.wasSuccessful) {
+                this.seatBehavior.joinGame(this.boardService, this.gameId)
+                    .subscribe(x => {
+                        if (x.wasSuccessful) {
+                            this.toastr.infoToastr('Joined game!');
+                        }
+                        x.errors.forEach(x => {
+                            this.toastr.errorToastr(x);
+                        });
+                    });
+                }
+            });
 
         // var fenStream = this.boardService.initialize().subscribe(fen => {
         //     const boardConfig = this.boardConfig;
@@ -220,9 +232,9 @@ export class BoardComponent implements OnInit {
         //     .map(x => { return { current: x[1], previous: x[0] }; })
         //     .subscribe(x => this.setNewActiveCssClass(x, 'mostRecentValidMove'));
 
-        // this.isValidating
-        //     .pairwise()
-        //     .map(x => { return { current: x[1], previous: x[0] }; })
-        //     .subscribe(x => this.setNewActiveCssClass(x, 'isValidating'));
+        this.isValidating
+            .pipe(pairwise())
+            .pipe(map(x => { return { current: x[1], previous: x[0] }; }))
+            .subscribe(x => this.setNewActiveCssClass(x, 'isValidating'));
     }
 }

@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Runtime;
+using OrleansChess.Common;
 using OrleansChess.GrainClasses.Chess;
 
 namespace OrleansChess.Web.Orleans
