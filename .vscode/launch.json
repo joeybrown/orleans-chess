@@ -3,12 +3,18 @@
    // Use hover for the description of the existing attributes
    // For further information visit https://github.com/OmniSharp/omnisharp-vscode/blob/master/debugger-launchjson.md
    "version": "0.2.0",
+   "compounds": [
+        {
+            "name": "Host+Web",
+            "configurations": [ "Orleans Host", "Web App" ]
+        }
+    ],
    "configurations": [
         {
-            "name": ".NET Core Launch (web)",
+            "name": "Web App",
             "type": "coreclr",
             "request": "launch",
-            "preLaunchTask": "build",
+            "preLaunchTask": "buildWeb",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/OrleansChess.Web/bin/Debug/netcoreapp2.1/OrleansChess.Web.dll",
             "args": [],
@@ -35,12 +41,20 @@
             "sourceFileMap": {
                 "/Views": "${workspaceFolder}/src/Views"
             }
-        },
-        {
-            "name": ".NET Core Attach",
+        },{
+            "name": "Orleans Host",
             "type": "coreclr",
-            "request": "attach",
-            "processId": "${command:pickProcess}"
+            "request": "launch",
+            "preLaunchTask": "buildHost",
+            // If you have changed target frameworks, make sure to update the program path.
+            "program": "${workspaceFolder}/src/OrleansChess.Host/bin/Debug/netcoreapp2.1/OrleansChess.Host.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/OrleansChess.Host",
+            "stopAtEntry": false,
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            }
         }
-    ,]
+    ]
 }
