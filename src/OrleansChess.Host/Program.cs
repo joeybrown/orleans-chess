@@ -43,8 +43,8 @@ namespace OrleansSiloHost
             var builder = new SiloHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddSingleton<IPlayerSeatStreamProvider>(new PlayerSeatStreamProvider(nameof(PlayerSeatStreamProvider)));
-                    services.AddSingleton<IPlayerMoveStreamProvider>(new PlayerMoveStreamProvider(nameof(PlayerMoveStreamProvider)));
+                    services.AddSingleton<IPlayerSeatStreamProvider>(new PlayerSeatStreamProvider(GrainPersistence.PlayerSeatStreamProvider));
+                    services.AddSingleton<IPlayerMoveStreamProvider>(new PlayerMoveStreamProvider(GrainPersistence.PlayerMoveStreamProvider));
                 })
                 .UseLocalhostClustering()
                 .AddMemoryGrainStorage(GrainPersistence.SeatIStateStore)
@@ -55,6 +55,8 @@ namespace OrleansSiloHost
                 .AddSimpleMessageStreamProvider(GrainPersistence.SeatIIStateStore)
                 .AddSimpleMessageStreamProvider(GrainPersistence.BoardStateStore)
                 .AddSimpleMessageStreamProvider(GrainPersistence.GameStateStore)
+                .AddSimpleMessageStreamProvider(GrainPersistence.PlayerMoveStreamProvider)
+                .AddSimpleMessageStreamProvider(GrainPersistence.PlayerSeatStreamProvider)
                 .Configure<ClusterOptions>(options =>
                 {
                     options.ClusterId = "dev";
