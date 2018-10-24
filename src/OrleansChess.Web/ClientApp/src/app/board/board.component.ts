@@ -12,7 +12,8 @@ import { SuccessOrErrors } from '../models/SuccessOrErrors';
 import { IBoardOrientation, PlayerIBoardOrientation, PlayerIIBoardOrientation } from '../models/BoardOrientation';
 import { ToastrManager } from 'ng6-toastr-notifications';
 import { AppAuthService } from '../auth/app-auth.service';
-import { switchMap, pairwise, map, tap } from 'rxjs/operators';
+import { switchMap, pairwise, map, tap, multicast, publish } from 'rxjs/operators';
+import { Subject, ReplaySubject } from 'rxjs';
 
 declare var ChessBoard;
 
@@ -81,14 +82,9 @@ class SeatPlayerIIBehavior implements ISeatBehavior {
 
 class SeatBehaviorFactory {
     static buildSeatBehavior(orientation: IBoardOrientation) {
-        switch (typeof (orientation)) {
-            case (typeof (PlayerIIBoardOrientation)):
-                return new SeatPlayerIIBehavior();
-            case (typeof (PlayerIBoardOrientation)):
-                return new SeatPlayerIBehavior();
-            default:
-                throw ('Unknown orientation');
-        }
+        if (orientation.shouldFlipBoard)
+            return new SeatPlayerIIBehavior();
+        return new SeatPlayerIBehavior();
     }
 }
 
@@ -136,12 +132,11 @@ export class BoardComponent implements OnInit {
             return;
 
         const oldFen = ChessBoard.objToFen(oldPos);
-        const newFen = ChessBoard.objToFen(newPos);
 
         var move = { source: source, target: target };
         this.isValidating.next(move);
 
-        this.seatBehavior.movePiece(this.boardService, this.gameId, oldFen, newFen).subscribe(
+        this.seatBehavior.movePiece(this.boardService, this.gameId, source, target).subscribe(
             result => {
                 if (!result.wasSuccessful) {
                     moveBack(move, oldFen);
@@ -175,15 +170,12 @@ export class BoardComponent implements OnInit {
 
     ngOnInit(): void {
 
-        if (this.orientation.shouldFlipBoard) 
-            this.seatBehavior = new SeatPlayerIBehavior();
-        else 
-            this.seatBehavior = new SeatPlayerIIBehavior();
+        this.seatBehavior = SeatBehaviorFactory.buildSeatBehavior(this.orientation)
 
         var boardStateSubscription = this.authService.ensureUserIsAuthenticated()
             .pipe(switchMap(x=> this.boardService.initializeRealtimeConnection()))
-            .pipe(switchMap(x => this.boardService.getBoardState(this.gameId)));
-
+            .pipe(switchMap(x => this.boardService.getBoardState(this.gameId)))
+        
         boardStateSubscription
             .subscribe(x => {
                 if (x.wasSuccessful) {
@@ -192,28 +184,24 @@ export class BoardComponent implements OnInit {
                     this.board = ChessBoard(`gameId-${this.gameId}`, boardConfig);
                     this.board.start();
                     setBoardOrientation(this.board, this.orientation);
+                    joinGame();
                     return;
-                } else {
-                    x.errors.forEach(x => {
-                        this.toastr.errorToastr(x);
-                    });
-                }
+                } 
+                x.errors.forEach(x => {
+                    this.toastr.errorToastr(x);
+                })
             });
 
-        boardStateSubscription.subscribe(x=>{
-            if (x.wasSuccessful) {
-                this.seatBehavior.joinGame(this.boardService, this.gameId)
-                    .subscribe(x => {
-                        if (x.wasSuccessful) {
-                            this.toastr.infoToastr('Joined game!');
-                        } else {
-                            x.errors.forEach(x => {
-                                this.toastr.errorToastr(x);
-                            });
-                        }
-                    });
-                }
-            });
+            var joinGame = ()=> this.seatBehavior.joinGame(this.boardService, this.gameId)
+                .subscribe(x => {
+                    if (x.wasSuccessful) {
+                        this.toastr.infoToastr('Joined game!');
+                    } else {
+                        x.errors.forEach(x => {
+                            this.toastr.errorToastr(x);
+                        });
+                    }
+                });
 
         // var fenStream = this.boardService.initialize().subscribe(fen => {
         //     const boardConfig = this.boardConfig;
