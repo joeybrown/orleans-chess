@@ -93,8 +93,8 @@ class SeatBehaviorFactory {
 }
 
 const setBoardOrientation = (board: any, boardOrientation: IBoardOrientation) => {
-    if (this.orientation.shouldFlipBoard) {
-        this.board.flip();
+    if (boardOrientation.shouldFlipBoard) {
+        board.flip();
     }
 }
 
@@ -181,7 +181,7 @@ export class BoardComponent implements OnInit {
             this.seatBehavior = new SeatPlayerIIBehavior();
 
         var boardStateSubscription = this.authService.ensureUserIsAuthenticated()
-            .pipe(switchMap(x=> this.boardService.ensureConnectionInitialized()))
+            .pipe(switchMap(x=> this.boardService.initializeRealtimeConnection()))
             .pipe(switchMap(x => this.boardService.getBoardState(this.gameId)));
 
         boardStateSubscription
@@ -193,10 +193,11 @@ export class BoardComponent implements OnInit {
                     this.board.start();
                     setBoardOrientation(this.board, this.orientation);
                     return;
+                } else {
+                    x.errors.forEach(x => {
+                        this.toastr.errorToastr(x);
+                    });
                 }
-                x.errors.forEach(x => {
-                    this.toastr.errorToastr(x);
-                });
             });
 
         boardStateSubscription.subscribe(x=>{
@@ -205,10 +206,11 @@ export class BoardComponent implements OnInit {
                     .subscribe(x => {
                         if (x.wasSuccessful) {
                             this.toastr.infoToastr('Joined game!');
+                        } else {
+                            x.errors.forEach(x => {
+                                this.toastr.errorToastr(x);
+                            });
                         }
-                        x.errors.forEach(x => {
-                            this.toastr.errorToastr(x);
-                        });
                     });
                 }
             });

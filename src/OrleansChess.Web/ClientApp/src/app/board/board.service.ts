@@ -20,8 +20,7 @@ export class BoardService {
 
     private gameSeatActivity: (method: string, gameId: string) => Observable<SuccessOrErrors<BoardState>> =
         (method: string, gameId: string) =>
-            this.ensureConnectionInitialized()
-                .pipe(switchMap(()=>fromPromise(this.connection.invoke(method, gameId))));
+            fromPromise(this.connection.invoke(method, gameId));
             
 
     private playerMove: (method: string, gameId: string, originalPosition: string, newPosition: string) => Observable<SuccessOrErrors<BoardState>> =
@@ -44,10 +43,7 @@ export class BoardService {
 
     playerIIJoinGame = gameId => this.gameSeatActivity("PlayerIIJoinGame", gameId);
 
-    ensureConnectionInitialized = () => {
-        if (this.connection)
-            return of(null);
-
+    initializeRealtimeConnection = () => {
         this.connection = new signalR.HubConnectionBuilder()
             .withUrl("/chesshub")
             .build();
@@ -63,8 +59,7 @@ export class BoardService {
     }
 
     getBoardState: (gameId) => Observable<SuccessOrErrors<BoardState>> = gameId =>
-        this.ensureConnectionInitialized()
-            .pipe(switchMap(x => fromPromise(this.connection.invoke("GetBoardState", gameId) as Promise<SuccessOrErrors<BoardState>>)))
+        fromPromise(this.connection.invoke("GetBoardState", gameId) as Promise<SuccessOrErrors<BoardState>>)
             .pipe(catchError(error => {
                 console.log(error.message);
                 var result = new SuccessOrErrors<BoardState>();
